@@ -1,9 +1,9 @@
-# aaindex
-Python package for working with AAIndex database (https://www.genome.jp/aaindex/)
-
+# aaindex (In Development)
 ![alt text](https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_logo.png)
 
-# pySAR <a name="TOP"></a>
+Python package for working with AAIndex database (https://www.genome.jp/aaindex/)
+
+# AAIndex <a name="TOP"></a>
 [![AAIndex](https://img.shields.io/pypi/v/aaindex)](https://pypi.org/project/aaindex/)
 [![pytest](https://github.com/amckenna41/pySAR/workflows/Building%20and%20Testing%20%F0%9F%90%8D/badge.svg)](https://github.com/amckenna41/pySAR/actions?query=workflowBuilding%20and%20Testing%20%F0%9F%90%8D)
 [![Platforms](https://img.shields.io/badge/platforms-linux%2C%20macOS%2C%20Windows-green)](https://pypi.org/project/aaindex/)
@@ -62,12 +62,9 @@ import aaindex as aai
 
 Directories
 -----------
-* `/pySAR/PyBioMed` - package partially forked from https://github.com/gadsbyfly/PyBioMed, used in
-the calculation of the protein descriptors.
-* `/Results` - stores the associated research paper created alongside the software. Also includes all results generated from the research as well as the article's supplementary materials.
-* `/tests` - unit and integration tests for pySAR.
-* `/data` - all required data and datasets are stored in this folder.
-
+* `/tests` - unit and integration tests for aaindex package.
+* `/data` - all required data and datasets for aaindex are stored in this folder.
+* `/images` - images used throughout README
 
 Tests
 -----
