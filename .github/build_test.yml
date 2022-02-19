@@ -10,11 +10,11 @@ on:
   # allow for workflow to be manually initiated from the Actions tab
   workflow_dispatch:
 
-#build and test pySAR
+#build and test aaindex
 jobs:
   build:
 
-    name: Build and test pySAR
+    name: Build and test aaindex
     runs-on: ubuntu-latest         # platform: [ubuntu-latest, macos-latest, windows-latest]
     strategy:
       matrix:
@@ -57,7 +57,7 @@ jobs:
        cat bandit_output.txt
       continue-on-error: true
 
-  # - pytest --cov-report term --cov=pySAR tests/
+  # - pytest --cov-report term --cov=aaindex tests/
     - name: Lint with flake8
       run: |
         echo "Testing using flake8..."
@@ -80,5 +80,5 @@ jobs:
     - name: Coverage Report
       run: |
         echo "Running coverage report..."
-        pytest --cov-report term --cov=pySAR tests/
+        pytest --cov-report term --cov=aaindex tests/
     # coveralls

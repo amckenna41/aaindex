@@ -5,7 +5,7 @@
 import pathlib
 from setuptools import setup, find_packages
 import sys
-import pySAR
+import aaindex
 
 #ensure python version is greater than 3
 if sys.version_info[0] < 3:
