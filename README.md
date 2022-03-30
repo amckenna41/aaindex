@@ -1,16 +1,14 @@
-# aaindex (In Development)
-![alt text](https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_logo.png)
+## Python package for working with AAIndex database (https://www.genome.jp/aaindex/) <a name="TOP"></a>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_logo.png" />
+</p>
 
-Python package for working with AAIndex database (https://www.genome.jp/aaindex/)
-
-# AAIndex <a name="TOP"></a>
 [![AAIndex](https://img.shields.io/pypi/v/aaindex)](https://pypi.org/project/aaindex/)
-[![pytest](https://github.com/amckenna41/pySAR/workflows/Building%20and%20Testing%20%F0%9F%90%8D/badge.svg)](https://github.com/amckenna41/pySAR/actions?query=workflowBuilding%20and%20Testing%20%F0%9F%90%8D)
+[![pytest](https://github.com/amckenna41/aaindex/workflows/Building%20and%20Testing%20%F0%9F%90%8D/badge.svg)](https://github.com/amckenna41/aaindex/actions?query=workflowBuilding%20and%20Testing%20%F0%9F%90%8D)
+[![Build](https://img.shields.io/github/workflow/status/amckenna41/aaindex/Deploy%20to%20PyPI%20%F0%9F%93%A6)](https://github.com/amckenna41/aaindex/actions)
 [![Platforms](https://img.shields.io/badge/platforms-linux%2C%20macOS%2C%20Windows-green)](https://pypi.org/project/aaindex/)
-[![PythonV](https://img.shields.io/pypi/pyversions/pySAR?logo=2)](https://pypi.org/project/aaindex/)
+[![PythonV](https://img.shields.io/pypi/pyversions/aaindex?logo=2)](https://pypi.org/project/aaindex/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
-[![Build](https://img.shields.io/github/workflow/status/amckenna41/pySAR/Deploy%20to%20PyPI%20%F0%9F%93%A6)](https://github.com/amckenna41/pySAR/actions)
-[![Build Status](https://travis-ci.com/amckenna41/aaindex.svg?branch=main)](https://travis-ci.com/amckenna41/aaindex)
 [![Issues](https://img.shields.io/github/issues/amckenna41/aaindex)](https://github.com/amckenna41/aaindex/issues)
 [![Size](https://img.shields.io/github/repo-size/amckenna41/aaindex)](https://github.com/amckenna41/aaindex)
 [![Commits](https://img.shields.io/github/commit-activity/w/amckenna41/aaindex)](https://github.com/amckenna41/aaindex)
@@ -24,7 +22,7 @@ Table of Contents
   * [Usage](#usage)
   * [Tests](#tests)
   * [Contact](#contact)
-  * [References][#references]
+  * [References](#References)
 
 Introduction
 ------------
@@ -134,6 +132,7 @@ References
 \[1\]: https://www.genome.jp/aaindex/
 
 [Back to top](#TOP)
+
 [python]: https://www.python.org/downloads/release/python-360/
 [numpy]: https://numpy.org/
 [pandas]: https://pandas.pydata.org/
