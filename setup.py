@@ -50,7 +50,8 @@ setup(name='aaindex',
           'numpy>=1.16.6',
           'delayed',
           'scikit-learn==0.24.1',
-          'requests'
+          'requests>=2.25',
+          'urllib3>=1.26'
       ],
 
      packages=find_packages(),

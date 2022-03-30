@@ -4,6 +4,7 @@ name: Deploy to PyPI 📦
 on:
   workflow_run:
     workflows: [Deploy to TestPyPI 📦]
+    branches: [main]
     types:
       - completed
 
