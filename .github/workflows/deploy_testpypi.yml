@@ -1,0 +1,56 @@
+name: Deploy to TestPyPI 📦
+
+# trigger deploy workflow once build and test workflow has successfully completed
+on:
+  workflow_run:
+    workflows: ["Building and Testing 🐍"]
+    types:
+      - completed
+
+  # allow for workflow to be manually initiated from the Actions tab
+  workflow_dispatch:
+
+#build and deploy to Test PyPI server
+jobs:
+  build:
+
+    name: Deploy to TestPyPI 📦
+    runs-on: ubuntu-latest         # platform: [ubuntu-latest, macos-latest, windows-latest]
+    strategy:
+      matrix:
+        python-version: [3.8]  #deploying using one Python version on 1 runner
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    # install all required modules and dependancies using pip and setup.py installation
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python3 -m pip install setuptools wheel twine
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        python3 setup.py install
+
+    # build distribution package of software and upload to the test PYPi server
+    - name: Build and Upload to TestPyPI
+      run: |
+        python3 setup.py sdist bdist_wheel
+        python3 -m twine upload dist/*
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PY_PI_TEST }}
+        TWINE_REPOSITORY: testpypi
+
+     # sleep for 30 seconds to ensure that distribution package has successfully been uploaded to Test PyPI
+    - name: Wait / Sleep
+      uses: jakejarvis/wait-action@v0.1.0
+
+    # download package of aaindex from Test PYPI server to ensure it uploaded correctly
+    - name: Install aaindex from Test PyPI
+      run: |
+        pip install -i https://test.pypi.org/simple/ aaindex
+        echo "aaindex successfully installed"
+        echo -e "import aaindex as aaindex\nprint(aaindex.__version__)" | python3

@@ -3,15 +3,13 @@
 ################################################################################
 
 import os
-import sys
-import shutil
 import numpy as np
-import aaindex as aai
+from aaindex import aaindex
 
 import unittest
 import requests
-import urllib.request
-
+import aaindex as aaindex_
+from aaindex.aaindex import aaindex
 class AAIndexTests(unittest.TestCase):
 
     def setUp(self):
@@ -23,6 +21,16 @@ class AAIndexTests(unittest.TestCase):
         if (os.path.isfile(self.test_dir)):
             os.rmdir(self.test_dir)
         os.mkdir(self.test_dir)
+
+    def test_aaindex_version(self):
+        """ Testing correct aaindex version. """
+        self.assertEqual(aaindex_.__version__, "0.0.1", "aaindex version is not correct, got: {}".format(aaindex_.__version__))
+        self.assertEqual(aaindex_.__name__, "aaindex", "aaindex software name is not correct, got: {}".format(aaindex_.__name__))
+        self.assertEqual(aaindex_.__author__, "AJ McKenna, https://github.com/amckenna41", "aaindex author is not correct, got: {}".format(aaindex_.__author__))
+        self.assertEqual(aaindex_.__authorEmail__, "amckenna41@qub.ac.uk", "aaindex author email is not correct, got: {}".format(aaindex_.__authorEmail__))
+        self.assertEqual(aaindex_.__url__, "https://github.com/amckenna41/aaindex", "aaindex repo URL is not correct, got: {}".format(aaindex_.__url__))
+        self.assertEqual(aaindex_.__credits__, ['AJ McKenna'], "aaindex credits is not correct, got: {}".format(aaindex_.__credits__))
+        self.assertEqual(aaindex_.__license__, "MIT", "aaindex license type is not correct, got: {}".format(aaindex_.__license__))
 
     @unittest.skip("Don't want to overload the FTP server each time tests are run.")
     def test_download(self):
@@ -36,10 +44,10 @@ class AAIndexTests(unittest.TestCase):
 
         #assert that OSError exception raised when erroneous directory input to download func
         with self.assertRaises(OSError):
-            aai.download_aaindex()
+            aaindex.download_aaindex()
 #2.)
         #download AAI1 to local test directory
-        aai.download_aaindex()
+        aaindex.download_aaindex()
 
         #verify download functionality has worked as desired
         self.assertTrue(os.path.isfile(os.path.join(self.TEST_DIR, 'aaindex1')),
@@ -79,7 +87,7 @@ class AAIndexTests(unittest.TestCase):
 
         valid_amino_acids = ['-', 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K',
             'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
-        amino_acids = aai.get_amino_acids()
+        amino_acids = aaindex.get_amino_acids()
 #1.)
         for aa in amino_acids:
             self.assertIn(aa, valid_amino_acids, 'Amino Acid {} not in valid \
@@ -90,20 +98,20 @@ class AAIndexTests(unittest.TestCase):
         in the AAIndex object. To date, 566 indices are present in the database,
         features may be added to the AAI in time so the test takes this into account. """
 #1.)
-        self.assertTrue(aai.get_num_records() >= 566, 'Incorrect number \
-            of features found in AAI, wanted 566, got {}.'.format(aai.get_num_records()))
+        self.assertTrue(aaindex.get_num_records() >= 566, 'Incorrect number \
+            of features found in AAI, wanted 566, got {}.'.format(aaindex.get_num_records()))
 
     def test_feature_size(self):
         """ Test Case to check that the AAI has the correct dimensionality. Check that
         the number of keys in parsed JSON from the AAI is correct. The test takes
         into account if more features are added to the database in the future. """
 #1.)
-        self.assertTrue(len(aai.get_record_codes())>=566, 'Incorrect number \
-            of features found in AAI, wanted 566, got {}.'.format(len(aai.get_record_codes())))
+        self.assertTrue(len(aaindex.record_codes())>=566, 'Incorrect number \
+            of features found in AAI, wanted 566, got {}.'.format(len(aaindex.record_codes())))
 
     def test_get_record_from_code(self):
         """ Test Case to check that the correct amino acid values are returned for
-        the feature/index codes using the get_record_from_code function. """
+        the feature/index codes using the __getitem__ function. """
 #1.)
         #initialise test feature codes and their correct amino acid values
         feature1 = 'AURR980103'
@@ -128,7 +136,7 @@ class AAIndexTests(unittest.TestCase):
             'Y': 4.0, 'I': 6.7, 'V': 6.8, '-': 0}
 #1.)
         #get amino acid values for inputted feature/index codes
-        record = aai.get_record_from_code(feature1)
+        record = aaindex[feature1]
 
         self.assertIn('description', list(record.keys()))
         self.assertIn('refs', list(record.keys()))
@@ -141,7 +149,7 @@ class AAIndexTests(unittest.TestCase):
         self.assertEqual(record['notes'],'')
         self.assertTrue(record['refs'].startswith("Aurora, R. and Rose, G."))
 #2.)
-        record = aai.get_record_from_code(feature2)
+        record = aaindex[feature2]
 
         self.assertIn('description', list(record.keys()))
         self.assertIn('refs', list(record.keys()))
@@ -154,7 +162,7 @@ class AAIndexTests(unittest.TestCase):
         self.assertEqual(record['notes'],'')
         self.assertTrue(record['refs'].startswith("Fauchere, J.L., Charton, M"))
 #3.)
-        record = aai.get_record_from_code(feature3)
+        record = aaindex[feature3]
 
         self.assertIn('description', list(record.keys()))
         self.assertIn('refs', list(record.keys()))
@@ -167,7 +175,7 @@ class AAIndexTests(unittest.TestCase):
         self.assertEqual(record['notes'],'')
         self.assertTrue(record['refs'].startswith("Nagano, K."))
 #4.)
-        record = aai.get_record_from_code(feature4)
+        record = aaindex[feature4]
         self.assertIn('description', list(record.keys()))
         self.assertIn('refs', list(record.keys()))
         self.assertIn('notes', list(record.keys()))
@@ -185,13 +193,13 @@ class AAIndexTests(unittest.TestCase):
         feature7 = "blahblahblah"
 
         with self.assertRaises(ValueError):
-            feature_vals = aai.get_record_from_code(feature5)
+            feature_vals = aaindex[feature5]
 
         with self.assertRaises(ValueError):
-            feature_vals = aai.get_record_from_code(feature6)
+            feature_vals = aaindex[feature6]
 
         with self.assertRaises(ValueError):
-            feature_vals = aai.get_record_from_code(feature7)
+            feature_vals = aaindex[feature7]
 
     def test_get_record_from_name(self):
 
@@ -219,13 +227,13 @@ class AAIndexTests(unittest.TestCase):
         feature4 = 'NADH010101'
 #1.)
         #testing index codes are in the AAI1
-        self.assertIn(feature1, aai.get_record_codes(), 'Index {} \
+        self.assertIn(feature1, aaindex.record_codes(), 'Index {} \
             not found in list of available indices.'.format(feature1))
-        self.assertIn(feature2, aai.get_record_codes(), 'Index {} \
+        self.assertIn(feature2, aaindex.record_codes(), 'Index {} \
             not found in list of available indices'.format(feature2))
-        self.assertIn(feature3, aai.get_record_codes(), 'Index {} \
+        self.assertIn(feature3, aaindex.record_codes(), 'Index {} \
             not found in list of available indices'.format(feature3))
-        self.assertIn(feature4, aai.get_record_codes(), 'Index {} \
+        self.assertIn(feature4, aaindex.record_codes(), 'Index {} \
             not found in list of available indices'.format(feature4))
 #2.)
         #testing bogus index codes
@@ -235,13 +243,13 @@ class AAIndexTests(unittest.TestCase):
         feature8 = 'ABC1234567'
 
         #testing errenous index codes are not in the AAI1
-        self.assertNotIn(feature5, aai.get_record_codes(), 'Index {} \
+        self.assertNotIn(feature5, aaindex.record_codes(), 'Index {} \
             erroneously found in list of available indices.'.format(feature5))
-        self.assertNotIn(feature6, aai.get_record_codes(), 'Index {} \
+        self.assertNotIn(feature6, aaindex.record_codes(), 'Index {} \
             erroneously found in list of available indices.'.format(feature6))
-        self.assertNotIn(feature7, aai.get_record_codes(), 'Index {} \
+        self.assertNotIn(feature7, aaindex.record_codes(), 'Index {} \
             erroneously found in list of available indices.'.format(feature7))
-        self.assertNotIn(feature8, aai.get_record_codes(), 'Index {} \
+        self.assertNotIn(feature8, aaindex.record_codes(), 'Index {} \
             erroneously found in list of available indices.'.format(feature8))
 
     def test_category(self):
@@ -255,10 +263,10 @@ class AAIndexTests(unittest.TestCase):
         err_feature2 = "12345"
         err_feature3 = 100.902
 #1.)
-        cat1 = aai.get_category_from_record(feature1)
-        cat2 = aai.get_category_from_record(feature2)
-        cat3 = aai.get_category_from_record(feature3)
-        cat4 = aai.get_category_from_record(feature4)
+        cat1 = aaindex.get_category_from_record(feature1)
+        cat2 = aaindex.get_category_from_record(feature2)
+        cat3 = aaindex.get_category_from_record(feature3)
+        cat4 = aaindex.get_category_from_record(feature4)
 
         self.assertEqual(cat1, 'sec_struct', 'Incorrect category returned, got {} \
             instead of {} '.format(cat1, 'sec_struct'))
@@ -270,36 +278,36 @@ class AAIndexTests(unittest.TestCase):
             instead of {} '.format(cat4, 'meta'))
 #2.)
         with (self.assertRaises(ValueError)):
-            cat5 = aai.get_category_from_record(err_feature1)
+            cat5 = aaindex.get_category_from_record(err_feature1)
 
         with (self.assertRaises(ValueError)):
-            cat6 = aai.get_category_from_record(err_feature2)
+            cat6 = aaindex.get_category_from_record(err_feature2)
 
         with (self.assertRaises(TypeError)):
-            cat7 = aai.get_category_from_record(err_feature3)
+            cat7 = aaindex.get_category_from_record(err_feature3)
 
     def test_aaindex_names(self):
         """ Test Case to check that the correct names/description is returned for each index. """
 
-        names = aai.get_record_names()
+        names = aaindex.get_record_names()
 
         name1 = names[50]
         name2 = names[140]
         name3 = names[368]
         name4 = names[560]
 
-        self.assertEqual(len(names), aai.get_num_records(), 'Total number \
+        self.assertEqual(len(names), aaindex.get_num_records(), 'Total number \
             of names in the AAI database should equal the number of records')
-        self.assertEqual(name1, 'Frequency of the 3rd residue in turn (Chou-Fasman, 1978b)',
+        self.assertEqual(name1, 'alpha-NH chemical shifts (Bundi-Wuthrich, 1979)',
             'Incorrect index name returned, got {} instead of {}'.format(name1,
-                'Frequency of the 3rd residue in turn (Chou-Fasman, 1978b)'))
-        self.assertTrue(name2.startswith('Average relative probability'),
+                'alpha-NH chemical shifts (Bundi-Wuthrich, 1979)'))
+        self.assertTrue(name2.startswith('Number of full nonbonding'),
             'Incorrect index name returned, got {} instead of {}'.format(name2,
-                'Average relative probability'))
-        self.assertIn('chain reversal', name3, 'String {} not found in index name: \
-            {}'.format('chain reversal',name3))
-        self.assertTrue(name4.endswith('(Karkbara-Knisley, 2016)'), 'Index does \
-            not end with {}, got {}'.format('(Karkbara-Knisley, 2016)', name4))
+                'Number of full nonbonding'))
+        self.assertIn('alpha-helix in alpha/beta class', name3, 'String {} not found in index name: \
+            {}'.format('alpha-helix in alpha/beta class',name3))
+        self.assertTrue(name4.endswith('Buriability (Zhou-Zhou, 2004)'), 'Index does \
+            not end with {}, got {}'.format('Buriability (Zhou-Zhou, 2004)', name4))
 
     def test_aaindex_refs(self):
         """ Test Case to check that the correct references are returned for each index. """
@@ -311,10 +319,10 @@ class AAIndexTests(unittest.TestCase):
         feature5 = "blah_blah"
         feature6 = 123
 #1.)
-        ref1 = aai.get_ref_from_record(feature1)
-        ref2 = aai.get_ref_from_record(feature2)
-        ref3 = aai.get_ref_from_record(feature3)
-        ref4 = aai.get_ref_from_record(feature4)
+        ref1 = aaindex[feature1]['refs']
+        ref2 = aaindex[feature2]['refs']
+        ref3 = aaindex[feature3]['refs']
+        ref4 = aaindex[feature4]['refs']
 
         self.assertTrue(ref1.startswith('Veljkovic'), 'Incorrect index reference, \
             got {} instead of {} '.format(ref1,'' ))
@@ -323,20 +331,20 @@ class AAIndexTests(unittest.TestCase):
         self.assertTrue(ref4.endswith('Nucleic Acids Res. 28, 374 (2000).'))
 #2.)
         with (self.assertRaises(ValueError)):
-            ref5 = aai.get_ref_from_record(feature5)
+            ref5 = aaindex[feature5]['refs']
 
         with (self.assertRaises(TypeError)):
-            ref6 = aai.get_ref_from_record(feature6)
+            ref6 = aaindex[feature6]['refs']
 
     def test_aaindex_encoding(self):
         """ Testing amino acids one-hot encoding. """
 #1.)
-        encoding = aai.get_amino_acids_encoding()
+        encoding = aaindex.get_amino_acids_encoding()
         self.assertEqual(encoding.shape, (20,20))
         self.assertIsInstance(encoding, np.ndarray)
 
     def tearDown(self):
-        """ """
+        """ Remove any test data or directories. """
         #remove test data directory
         os.rmdir('test_data')
 
