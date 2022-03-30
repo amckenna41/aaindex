@@ -24,7 +24,7 @@ class AAIndexTests(unittest.TestCase):
 
     def test_aaindex_version(self):
         """ Testing correct aaindex version. """
-        self.assertEqual(aaindex_.__version__, "0.0.1", "aaindex version is not correct, got: {}".format(aaindex_.__version__))
+        self.assertEqual(aaindex_.__version__, "0.0.2", "aaindex version is not correct, got: {}".format(aaindex_.__version__))
         self.assertEqual(aaindex_.__name__, "aaindex", "aaindex software name is not correct, got: {}".format(aaindex_.__name__))
         self.assertEqual(aaindex_.__author__, "AJ McKenna, https://github.com/amckenna41", "aaindex author is not correct, got: {}".format(aaindex_.__author__))
         self.assertEqual(aaindex_.__authorEmail__, "amckenna41@qub.ac.uk", "aaindex author email is not correct, got: {}".format(aaindex_.__authorEmail__))
