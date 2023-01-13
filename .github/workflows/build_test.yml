@@ -1,9 +1,13 @@
-name: Building and Testing 🐍
+name: Building and Testing
 
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [ master ]
+    paths-ignore: 
+      - '**/README.md'
+      - '**/.ipynb'
+      - 'docs/**/*'
   pull_request:
     branches: [ master ]
 
@@ -12,19 +16,24 @@ on:
 
 #build and test aaindex
 jobs:
-  build:
-
-    name: Build and test aaindex
-    runs-on: ubuntu-latest         # platform: [ubuntu-latest, macos-latest, windows-latest]
+  # test job, waits for build job to complete
+  test:
+    name: Setup environment
+    runs-on: ubuntu-latest        
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]   #testing on multiple python versions
+        python-version: ["3.8", "3.9", "3.10"]   #testing on multiple python versions
+        # os: [ubuntu-latest, macos-latest] #testing on ubuntu and mac os's
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+    
+    #create artifacts dir
+    - name: Artifacts mkdir
+      run: mkdir artifacts
 
     # install all required modules and dependancies using pip and setup.py installation
     - name: Install dependencies
@@ -39,46 +48,144 @@ jobs:
         pip3 install bandit
         pip3 install safety
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        python3 setup.py install
+        python3 setup.py install    
 
     #package vulnerability check
     - name: Package safety check
       run: |
-       echo "Running package safety check"
-       python3 -m safety check > package_safety_output.txt
-       cat package_safety_output.txt
+        echo "Running package safety check"
+        python3 -m safety check > artifacts/package_safety_output.txt
+        cat artifacts/package_safety_output.txt
       continue-on-error: true
 
     #run Bandit security check for any known vulnerabilities in code
     - name: Bandit
       run: |
-       echo "Running Bandit"
-       python3 -m bandit -r . > bandit_output.txt
-       cat bandit_output.txt
+        echo "Running Bandit"
+        python3 -m bandit -r iso3166-updates > artifacts/bandit_output.txt
+        cat artifacts/bandit_output.txt
       continue-on-error: true
 
-  # - pytest --cov-report term --cov=aaindex tests/
-    - name: Lint with flake8
-      run: |
-        echo "Testing using flake8..."
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-    # unit tests using pytest, unittest, flake8 and bandit frameworks
+    #unit tests using unittest and pytest
     - name: Testing with unittest
       run: |
         echo "Testing using unittest..."
-        python3 -m unittest discover
+        python3 -m unittest discover tests
 
     - name: Test with pytest
       run: |
         echo "Testing using pytest..."
         python3 -m pytest tests/
         
-    - name: Coverage Report
-      run: |
-        echo "Running coverage report..."
-        pytest --cov-report term --cov=aaindex tests/
-    # coveralls
+    #generate coverage report, output to file 
+    - name: Generate Report
+      run: python3 -m pytest --cov tests/ > artifacts/coverage.txt
+      # pytest --cov tests/ > coverage.txt
+
+    #upload to Code Coverage
+    - name: Upload Coverage Report to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        flags: aaindex_workflow
+    
+    #upload test artifacts to workflow
+    - name: Upload Test Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: test_artifacts
+        path: |
+          artifacts/package_safety_output.txt
+          artifacts/bandit_output.txt
+          artifacts/coverage.txt
+  
+  #linter check on repo
+  linter:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]   #testing on multiple python versions
+
+    steps:
+      #checkout repo
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      # install all required modules and dependancies using pip installation
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+      
+      #create temp artifacts repo
+      - name: Artifacts mkdir
+        run: mkdir flake8_artifacts
+
+      #linting with flake8
+      - name: Lint with flake8
+        run: |
+          echo "Testing using flake8..."
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics > flake8_artifacts/flake8_output.txt
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics >> flake8_artifacts/flake8_output.txt
+        continue-on-error: true
+      
+      #upload artifacts to repo
+      - name: Upload flake8 Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: flake8_artifact
+          path: flake8_artifacts/flake8_output.txt
+
+  #upload all artifacts to GCP
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, linter] #previous jobs must complete first
+    steps:  
+      - uses: actions/checkout@v3 #checkout repo 
+      
+      #get datetime env var
+      - name: Get current datetime
+        run: |
+          echo "NOW=$(date +'%Y-%m-%d_%H:%M')" >> $GITHUB_ENV
+      
+      #setup python env for 
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      #download test artifacts from previous job 
+      - name: Download Test Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: test_artifacts
+          path: artifacts
+
+      #download flake8 artifacts from previous job 
+      - name: Download flake8 Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: flake8_artifact
+          path: flake8_artifacts
+      
+      #export gcloud related Python environment variable
+      - name: Export CLOUDSDK_PYTHON
+        run: export CLOUDSDK_PYTHON="/usr/bin/python3"
+
+      #setup gcloud SDK with env vars
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+            version: "318.0.0"
+            project_id: ${{ secrets.GCP_PROJECT }}
+            # service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+            service_account_key: ${{ secrets.GCP_SA_KEY }}
+            # export_default_credentials: true
+      
+      #upload test and flake8 artifacts to GCP bucket
+      - name: Upload artifacts to GCP Bucket
+        run: |
+          cp flake8_artifacts/flake8_output.txt artifacts
+          yes | gcloud components update
+          gsutil cp -r artifacts/*.txt gs://${{ secrets.GCP_BUCKET }}/workflow_artifacts/$NOW

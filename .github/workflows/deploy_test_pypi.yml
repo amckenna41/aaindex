@@ -38,7 +38,9 @@ jobs:
     - name: Build and Upload to TestPyPI
       run: |
         python3 setup.py sdist bdist_wheel
-        python3 -m twine upload dist/*
+        twine check dist/*
+        python3 -m twine upload --repository testpypi dist/*
+
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PY_PI_TEST }}
@@ -53,4 +55,4 @@ jobs:
       run: |
         pip install -i https://test.pypi.org/simple/ aaindex
         echo "aaindex successfully installed"
-        echo -e "import aaindex as aaindex\nprint(aaindex.__version__)" | python3
+        echo -e "import aaindex as aai\nprint(aai.__version__)" | python3

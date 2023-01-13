@@ -1,24 +1,27 @@
 version: 2.1
 
+#create Python env
 orbs:
-  python: circleci/python@0.3.2
+  python: circleci/python@2.1.1
 
 jobs:
   build-and-test:
     executor: python/default
     environment:
       PYTHONPATH=./aaindex
+    #install python dependancies and libraries, checkout repo
     steps:
       - checkout
       - python/load-cache
       - python/install-deps
       - python/save-cache
-      - python/test
+      - python/test #run unit tests using pytest
 
+  #linter and code coverage
   lint-and-coverage:
     executor: python/default
     description: |
-      Running lint using flake8 and coverage report
+      Running lint using flake8 and coverage report on package.
     environment:
       PYTHONPATH=./aaindex
     steps:
@@ -26,6 +29,8 @@ jobs:
       - python/load-cache
       - python/install-deps
       - python/save-cache
+      - python/install-packages:
+          pkg-manager: pip 
       - run:
           name: Linter
           command: |
@@ -41,6 +46,7 @@ jobs:
             pytest --cov-report term --cov=test_aaindex tests/ > /tmp/coverage_report.txt || true
         # coverage run 
         # coverage report > /tmp/coverage_report.txt || true
+      #store linter and coverage artifacts in tmp folder
       - store_artifacts:
           path: /tmp/coverage_report.txt
           destination: artifacts-file
@@ -48,17 +54,21 @@ jobs:
           path: /tmp/flake8_output.txt
           destination: flake8-output.txt
 
+  #package safety and bandit security check
   safety-and-bandit:
       executor: python/default
       description: |
-        Running package safety and bandit security check modules
+        Running package safety and bandit security check on package.
       environment:
         PYTHONPATH=./aaindex
+      #install python dependancies and libraries, checkout repo
       steps:
         - checkout
         - python/load-cache
         - python/install-deps
         - python/save-cache
+        - python/install-packages:
+            pkg-manager: pip 
         - run:
             name: Safety
             command: |
@@ -70,6 +80,7 @@ jobs:
               pip install bandit
               bandit -r aaindex > /tmp/bandit_output.txt || true
               bandit -r tests > /tmp/bandit_output_tests.txt || true
+        #store safety and bandit artifacts in tmp folder
         - store_artifacts:
             path: /tmp/package_safety_output.txt
             destination: safety-output.txt
@@ -83,19 +94,24 @@ jobs:
   aaindex-pipeline:
       executor: python/default
       description: |
-        Running aaindex example pipeline
+        Running aaindex pipeline to check installation and version of package.
       environment:
         PYTHONPATH=./aaindex
+      #install python dependancies and libraries, checkout repo
       steps:
         - checkout
         - python/load-cache
         - python/install-deps
         - python/save-cache
+        - python/install-packages:
+            pkg-manager: pip 
         - run:
             name: aaindex pipeline test
             command: |
               pip3 install aaindex
-              
+              echo -e "import aaindex as aai\nprint(aai.__version__)" | python3
+
+#initialise all above jobs into a workflow
 workflows:
   main:
     jobs:
@@ -121,6 +137,8 @@ workflows:
               only:
                 - master
       - aaindex-pipeline:
+          requires:
+            - build-and-test
           filters:
             tags:
               only: /.*/

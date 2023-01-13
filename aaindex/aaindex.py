@@ -23,8 +23,7 @@ DOWNLOAD_USING = 'ftp'
 
 class AAIndex():
     """
-            Python parser for AAindex1: Amino Acid Index Database
-                      (**abbreviated to AAI onwards**)
+            Python parser for AAindex1: Amino Acid Index Database (AAI)
     The AAindex is a database of numerical indices representing various physiochemical
     and biochemical properties of amino acids and pairs of amino acids. This class 
     stores the amino acid index of 20 numerical values for the 20 amino acids 
@@ -97,35 +96,38 @@ class AAIndex():
     References
     ----------
     [1]: Nakai, K., Kidera, A., and Kanehisa, M.;  Cluster analysis of
-        amino acid indices for prediction of protein structure and
-        function.  Protein Eng. 2, 93-100 (1988)
+         amino acid indices for prediction of protein structure and
+         function.  Protein Eng. 2, 93-100 (1988)
     [2]: Tomii, K. and Kanehisa, M.;  Analysis of amino acid indices and
-        mutation matrices for sequence comparison and structure
-        prediction of proteins.  Protein Eng. 9, 27-36 (1996).
+         mutation matrices for sequence comparison and structure
+         prediction of proteins.  Protein Eng. 9, 27-36 (1996).
     [3]: Kawashima, S., Ogata, H., and Kanehisa, M.;  AAindex: amino acid
-        index database.  Nucleic Acids Res. 27, 368-369 (1999).
+         index database.  Nucleic Acids Res. 27, 368-369 (1999).
     [4]: Kawashima, S. and Kanehisa, M.;  AAindex: amino acid index
-        database.  Nucleic Acids Res. 28, 374 (2000).
+         database.  Nucleic Acids Res. 28, 374 (2000).
     """
     def __init__(self):
 
         self.aaindex_module_path = os.path.dirname(os.path.abspath(sys.modules[self.__module__].__file__))
+        self.data_dir = DATA_DIR
+        self.aaindex_filename = AAINDEX_FILENAME
+        self.download_using = DOWNLOAD_USING
 
         #download AAI database using ftp or https
-        if DOWNLOAD_USING =='ftp':
+        if self.download_using =='ftp':
             self.url = "ftp://ftp.genome.jp/pub/db/community/aaindex/aaindex1"
-        elif DOWNLOAD_USING =='http' or DOWNLOAD_USING =='https':
+        elif self.download_using =='http' or self.download_using =='https':
             self.url = "https://www.genome.jp/ftp/db/community/aaindex/aaindex1"
         else:
             self.url = "ftp://ftp.genome.jp/pub/db/community/aaindex/aaindex1"
 
         #if AAIndex database not found in data directory then call download method
-        if not (os.path.isfile(os.path.join(self.aaindex_module_path, DATA_DIR, AAINDEX_FILENAME))):
+        if not (os.path.isfile(os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename))):
             self.download_aaindex()
 
         #if parsed json of AAIndex already in file then read it and return 
-        if (os.path.isfile(os.path.join(self.aaindex_module_path, DATA_DIR, AAINDEX_FILENAME + '.json'))):
-            with open(os.path.join(self.aaindex_module_path, DATA_DIR, AAINDEX_FILENAME +'.json')) as aai_json:
+        if (os.path.isfile(os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename + '.json'))):
+            with open(os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename +'.json')) as aai_json:
                 self.aaindex_json = json.load(aai_json)
         else:
             #parse AAIndex database file into JSON format
@@ -133,6 +135,9 @@ class AAIndex():
 
         #get dict of categories
         self.categories = self.get_all_categories()
+
+        #get last updated
+        self.last_updated = "February 13, 2017" #as shown on homepage (https://www.genome.jp/aaindex/)
 
     def parse_aaindex(self):
         """
@@ -157,12 +162,12 @@ class AAIndex():
                          "C":[],
                          "I":[]}
 
-        #open AAI file for reading and parsing, by default it should be stored in DATA_DIR
+        #open AAI file for reading and parsing, by default it should be stored in self.data_dir
         try:
-            tmp_filepath = os.path.join(self.aaindex_module_path, DATA_DIR, AAINDEX_FILENAME)
+            tmp_filepath = os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename)
             f = open(tmp_filepath,'r')
         except IOError:
-            print('Error opening file, check filename = {} and is stored in {} directory.'.format(AAINDEX_FILENAME, DATA_DIR))
+            print('Error opening file, check filename = {} and is stored in {} directory.'.format(self.aaindex_filename, self.data_dir))
 
         #read lines of file
         lines = f.readlines()
@@ -265,8 +270,8 @@ class AAIndex():
                 if aaindex_json[index]['values'][val] == 'NA':
                     aaindex_json[index]['values'][val] = 0
 
-        #save parsed dictionary into JSON format to DATA_DIR
-        with open((os.path.join(self.aaindex_module_path, DATA_DIR, AAINDEX_FILENAME + '.json')),'w') as output_F:
+        #save parsed dictionary into JSON format to self.data_dir
+        with open((os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename + '.json')),'w') as output_F:
           json.dump(aaindex_json, output_F, indent=4, sort_keys=True)
 
         return aaindex_json
@@ -291,10 +296,10 @@ class AAIndex():
         """
         #fetch AAI database from URL if not present in DATA_DIR
         try:
-            if not(os.path.isfile(os.path.join(self.aaindex_module_path, save_dir, AAINDEX_FILENAME))):
+            if not(os.path.isfile(os.path.join(self.aaindex_module_path, save_dir, self.aaindex_filename))):
                 try:
                     with closing(request.urlopen(self.url)) as r:
-                        with open((os.path.join(self.aaindex_module_path, save_dir, AAINDEX_FILENAME)), 'wb') as f:
+                        with open((os.path.join(self.aaindex_module_path, save_dir, self.aaindex_filename)), 'wb') as f:
                             shutil.copyfileobj(r, f)
                     print('AAIndex1 successfully downloaded.')
                 except requests.exceptions.RequestException:
@@ -330,10 +335,10 @@ class AAIndex():
                     .format(aaindex_category_file))
         else:
             try:
-                f = open((os.path.join(self.aaindex_module_path, DATA_DIR, aaindex_category_file)),'r')
+                f = open((os.path.join(self.aaindex_module_path, self.data_dir, aaindex_category_file)),'r')
             except IOError:
                 print('Error opening AAIndex1 category file, check {} in {} directory'
-                    .format(aaindex_category_file, DATA_DIR))
+                    .format(aaindex_category_file, self.data_dir))
 
         #get total number of lines in file
         # total_lines = len(f.readlines(  ))
@@ -341,7 +346,7 @@ class AAIndex():
         #open new file in data directory to store parsed category file
         f.seek(0)
         category_output_file = "aaindex_categories.txt"
-        f_out = open((os.path.join(self.aaindex_module_path, DATA_DIR, category_output_file)), "w")
+        f_out = open((os.path.join(self.aaindex_module_path, self.data_dir, category_output_file)), "w")
 
         #lines starting with '#' are file metadata so don't write these to parsed output file
         for line in f.readlines():
@@ -352,7 +357,7 @@ class AAIndex():
         f_out.close()
 
         #open parsed category file for reading
-        with open(os.path.join(self.aaindex_module_path, DATA_DIR, category_output_file)) as f_out:
+        with open(os.path.join(self.aaindex_module_path, self.data_dir, category_output_file)) as f_out:
             reader = csv.reader(f_out, delimiter="\t")
             d = list(reader)
 
@@ -384,12 +389,12 @@ class AAIndex():
             Dictionary that maps each AAI record into 1 of 8 categories.
         """
         #if parsed categories file doesn't exist in DATA_DIR then call function
-        if not (os.path.isfile(os.path.join(self.aaindex_module_path, DATA_DIR, category_file))):
+        if not (os.path.isfile(os.path.join(self.aaindex_module_path, self.data_dir, category_file))):
             self.parse_categories()
 
         #read categories file and its content
         try:
-            with open(os.path.join(self.aaindex_module_path, DATA_DIR, category_file)) as f_out:
+            with open(os.path.join(self.aaindex_module_path, self.data_dir, category_file)) as f_out:
                 reader = csv.reader(f_out, delimiter="\t")
                 d = list(reader)
         except IOError:
@@ -486,7 +491,6 @@ class AAIndex():
                             matches.append(self.aaindex_json[index])    
 
         return matches
-
 
     def get_amino_acids(self):
         """
@@ -589,14 +593,22 @@ class AAIndex():
     def categories(self, value):
         self._categories = value
 
+    @property
+    def last_updated(self):
+        return self._last_updated
+
+    @last_updated.setter
+    def last_updated(self, value):
+        self._last_updated = value
+
 ################################################################################
 
-    def __repr__(self):
-        return "<AAIndex: {}>".format(self)
+    # def __repr__(self):
+    #     return "<AAIndex: {}>".format(self)
 
     def __sizeof__(self):
         """ Return size of AAI database file """
-        return os.path.getsize(os.path.isfile(os.path.join(DATA_DIR, AAINDEX_FILENAME)))
+        return os.path.getsize(os.path.isfile(os.path.join(self.data_dir, self.aaindex_filename)))
 
     def __getitem__(self, record_code):
         """
@@ -634,7 +646,4 @@ class AAIndex():
 
         return record
 
-aaindex = AAIndex()
-
-# get_ref_from_record()
-# get_values_from_record
+aaindex1 = AAIndex()

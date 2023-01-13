@@ -12,18 +12,22 @@ if sys.version_info[0] < 3:
     sys.exit('Python 3 is the minimum version requirement')
 
 HERE = pathlib.Path(__file__).parent
-
 README = (HERE / 'README.md').read_text()
 
-setup(name='aaindex',
+
+
+setup(name=aaindex.__name__,
       version=aaindex.__version__,
-      description='A Python package ',
+      description=aaindex.__description,
       long_description = README,
       long_description_content_type = "text/markdown",
-      author=aaindex.__license__,
+      author=aaindex.__author__,
       author_email=aaindex.__authorEmail__,
+      maintainer=aaindex.__maintainer__,
       license=aaindex.__license__,
       url=aaindex.__url__,
+      download_url=aaindex.__download_url,
+      keywords=aaindex.__keywords__,
       classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -33,19 +37,19 @@ setup(name='aaindex',
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Topic :: Scientific/Engineering :: Medical Science Apps.',
-        'Topic :: Scientific/Engineering :: Mathematics'
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-
       install_requires=[
           'numpy>=1.16.6',
           'delayed',
