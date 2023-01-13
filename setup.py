@@ -18,7 +18,7 @@ README = (HERE / 'README.md').read_text()
 
 setup(name=aaindex.__name__,
       version=aaindex.__version__,
-      description=aaindex.__description,
+      description=aaindex.__description__,
       long_description = README,
       long_description_content_type = "text/markdown",
       author=aaindex.__author__,
