@@ -26,7 +26,7 @@ setup(name=aaindex.__name__,
       maintainer=aaindex.__maintainer__,
       license=aaindex.__license__,
       url=aaindex.__url__,
-      download_url=aaindex.__download_url,
+      download_url=aaindex.__download_url__,
       keywords=aaindex.__keywords__,
       classifiers=[
         'Development Status :: 5 - Production/Stable',
