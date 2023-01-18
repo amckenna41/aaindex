@@ -28,3 +28,11 @@
 - [X] Add path-ignore keywords to GitHub Action.
 - [X] Reorder software metadata in setup.py to be in order of main func, create __description__ var.
 - [X] Add download_url to setup.py - url of zipped package.
+- [X] Add category to output object - aaindex1['CHOP780206']['category']
+- [X] Remove get_category_from_record function, just use aaindex1['XXXX']['category'] to get category.
+- [ ] Test aaindex_json has correct list of keys.
+- [X] Test last updated - self.last_updated = "February 13, 2017" #as shown on homepage (https://www.genome.jp/aaindex/)
+- [ ] Workflow script that runs every few months that web scrapes the "Last Updated" section on main aaindex website.
+- [X] Remove one-hot encoding from aaindex, and sci-kit learn library. 
+- [ ] Don't think 'C' is being parsed properly for each record.
+- [ ] Unit test to check no aaindex record values have NA/None or empty string etc - missing values should be 0'ed.

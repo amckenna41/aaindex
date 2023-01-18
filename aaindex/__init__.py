@@ -1,5 +1,6 @@
-# from .aaindex import aaIndex
-from .aaindex import *
+from .aaindex1 import *
+# from .aaindex2 import *
+# from .aaindex3 import *
 
 #aaindex software metadata
 __name__ = "aaindex"

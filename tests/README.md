@@ -4,17 +4,12 @@ All tests in the project were ran using Python's unittest testing framework (htt
 
 **Run all unittests from main project directory:**
 ```
-python3 -m unittest discover
+python3 -m unittest discover tests/
 ```
-
-**To run tests for specific module, from the main project directory run:**
-```
-python -m unittest tests.MODULE_NAME -v
-```
-
 You can add the flag *-b* to suppress some of the verbose output when running the unittests.
 
 Unit tests
 ----------
-
-* `test_aaindex.py` - tests for aaindex package.
+* `test_aaindex1.py` - tests for aaindex module.
+* `test_aaindex2.py` - tests for aaindex2 module.
+* `test_aaindex3.py` - tests for aaindex3 module.

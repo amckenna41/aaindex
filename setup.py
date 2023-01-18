@@ -52,8 +52,7 @@ setup(name=aaindex.__name__,
     ],
       install_requires=[
           'numpy>=1.16.6',
-          'delayed',
-          'scikit-learn==0.24.1',
+        #   'delayed',
           'requests>=2.25',
           'urllib3>=1.26'
       ],

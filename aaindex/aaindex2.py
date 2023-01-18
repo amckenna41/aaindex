@@ -1,4 +1,4 @@
-#AAIndex 2 implementation 
+#AAIndex2 
 
 # class AAIndex2():
 
@@ -326,3 +326,5 @@
 # # _parse('data/aaindex2', MatrixRecord)
 
 # # print(_aaindex['KOLA920101'].journal)
+
+
