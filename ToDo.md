@@ -34,5 +34,4 @@
 - [X] Test last updated - self.last_updated = "February 13, 2017" #as shown on homepage (https://www.genome.jp/aaindex/)
 - [ ] Workflow script that runs every few months that web scrapes the "Last Updated" section on main aaindex website.
 - [X] Remove one-hot encoding from aaindex, and sci-kit learn library. 
-- [ ] Don't think 'C' is being parsed properly for each record.
-- [ ] Unit test to check no aaindex record values have NA/None or empty string etc - missing values should be 0'ed.
+- [ ] Below aaindex record image in readme - add description of each record key.

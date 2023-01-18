@@ -43,9 +43,12 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
-    #sleep for 30 seconds to ensure that distribution package has successfully been uploaded to pyPI
+     # sleep for 30 seconds to ensure that distribution package has successfully been uploaded to PyPI
     - name: Wait / Sleep
-      uses: jakejarvis/wait-action@v0.1.0
+      # uses: jakejarvis/wait-action@v0.1.0
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '30s'
 
     # download package of aaindex from PYPI server to ensure it uploaded correctly
     - name: Install aaindex from PyPI

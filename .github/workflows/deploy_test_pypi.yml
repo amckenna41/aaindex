@@ -3,7 +3,7 @@ name: Deploy to TestPyPI 📦
 # trigger deploy workflow once build and test workflow has successfully completed
 on:
   workflow_run:
-    workflows: ["Building and Testing 🐍"]
+    workflows: ["Building and Testing"]
     types:
       - completed
 
@@ -48,7 +48,10 @@ jobs:
 
      # sleep for 30 seconds to ensure that distribution package has successfully been uploaded to Test PyPI
     - name: Wait / Sleep
-      uses: jakejarvis/wait-action@v0.1.0
+      # uses: jakejarvis/wait-action@v0.1.0
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '30s'
 
     # download package of aaindex from Test PYPI server to ensure it uploaded correctly
     - name: Install aaindex from Test PyPI
