@@ -42,9 +42,9 @@ class AAIndexTests(unittest.TestCase):
             " which represent the physiochemical and biochemical properties of amino acids as numerical indices.", 
                     "aaindex package summary is not correct, got: {}".format(metadata('aaindex')['summary']))
         self.assertEqual(metadata('aaindex')['keywords'], 
-            ["amino acid index", "bioinformatics", "protein engineering", "python", "pypi",
-                "physiochemical properties", "biochemical properties", "proteins", "psp", "pysar"], 
-                    "aaindex keywords are not correct, got: {}".format(metadata('aaindex')['keywords']))
+            "amino acid index,bioinformatics,protein engineering,python,pypi,physiochemical properties,"
+            "biochemical properties,proteins,psp,pysar", 
+                "aaindex keywords are not correct, got: {}".format(metadata('aaindex')['keywords']))
 
     @unittest.skip("Don't want to overload the FTP server each time tests are run.")
     def test_download(self):
