@@ -23,28 +23,28 @@ class AAIndexTests(unittest.TestCase):
 
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
-        self.assertEqual(__version__, "0.1.0",
+        self.assertEqual(__version__, "1.0.1",
             "aaindex version is not correct, got: {}".format(metadata("aaindex")['version']))
         self.assertEqual(metadata("aaindex")['name'], "aaindex", 
             "aaindex software name is not correct, got: {}".format(metadata("aaindex")['name']))
-        # self.assertEqual(metadata("aaindex")['author'], "AJ McKenna, https://github.com/amckenna41", 
-        #     "aaindex author is not correct, got: {}".format(metadata("aaindex")['author']))
+        self.assertEqual(metadata("aaindex")['author'], "AJ McKenna, https://github.com/amckenna41", 
+            "aaindex author is not correct, got: {}".format(metadata("aaindex")['author']))
         self.assertEqual(metadata("aaindex")['author-email'], "amckenna41@qub.ac.uk", 
             "aaindex author email is not correct, got: {}".format(metadata("aaindex")['author-email']))
         self.assertEqual(metadata('aaindex')['home-page'], "https://github.com/amckenna41/aaindex", 
             "aaindex home page url is not correct, got: {}".format(metadata('aaindex')['home-page']))
-        # self.assertEqual(metadata('aaindex')['maintainer'], "AJ McKenna", 
-        #     "aaindex maintainer is not correct, got: {}".format(metadata('aaindex')['maintainer']))
+        self.assertEqual(metadata('aaindex')['maintainer'], "AJ McKenna", 
+            "aaindex maintainer is not correct, got: {}".format(metadata('aaindex')['maintainer']))
         self.assertEqual(metadata('aaindex')['license'], "MIT", 
             "aaindex license type is not correct, got: {}".format(metadata('aaindex')['license']))
-        # self.assertEqual(metadata('aaindex')['summary'], 
-        #     "aaindex is a lightweight Python software package for accessing the data in the various AAIndex databases, \
-        #        which represent the physiochemical and biochemical properties of amino acids as numerical indices.", 
-        #             "aaindex package summary is not correct, got: {}".format(metadata('aaindex')['summary']))
-        # self.assertEqual(metadata('aaindex')['keywords'], 
-        #     ["amino acid index", "bioinformatics", "protein engineering", "python", "pypi",
-        #         "physiochemical properties", "biochemical properties", "proteins", "psp", "pysar"], 
-        #             "aaindex keywords are not correct, got: {}".format(metadata('aaindex')['keywords']))
+        self.assertEqual(metadata('aaindex')['summary'], 
+            "aaindex is a lightweight Python software package for accessing the data in the various AAIndex databases, \
+               which represent the physiochemical and biochemical properties of amino acids as numerical indices.", 
+                    "aaindex package summary is not correct, got: {}".format(metadata('aaindex')['summary']))
+        self.assertEqual(metadata('aaindex')['keywords'], 
+            ["amino acid index", "bioinformatics", "protein engineering", "python", "pypi",
+                "physiochemical properties", "biochemical properties", "proteins", "psp", "pysar"], 
+                    "aaindex keywords are not correct, got: {}".format(metadata('aaindex')['keywords']))
 
     @unittest.skip("Don't want to overload the FTP server each time tests are run.")
     def test_download(self):
