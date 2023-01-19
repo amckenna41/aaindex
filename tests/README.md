@@ -10,6 +10,6 @@ You can add the flag *-b* to suppress some of the verbose output when running th
 
 Unit tests
 ----------
-* `test_aaindex1.py` - tests for aaindex module.
+* `test_aaindex1.py` - tests for aaindex1 module.
 * `test_aaindex2.py` - tests for aaindex2 module.
 * `test_aaindex3.py` - tests for aaindex3 module.

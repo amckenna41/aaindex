@@ -34,4 +34,4 @@
 - [X] Test last updated - self.last_updated = "February 13, 2017" #as shown on homepage (https://www.genome.jp/aaindex/)
 - [ ] Workflow script that runs every few months that web scrapes the "Last Updated" section on main aaindex website.
 - [X] Remove one-hot encoding from aaindex, and sci-kit learn library. 
-- [ ] Below aaindex record image in readme - add description of each record key.
+- [X] Below aaindex record image in readme - add description of each record key.

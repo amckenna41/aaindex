@@ -38,8 +38,6 @@ This aaindex Python software package is a very lightweight way of accessing the 
 ```
   ************************************************************************
   *                                                                      *
-  * Each entry has the following format.                                 *
-  *                                                                      *
   * H Accession number                                                   *
   * D Data description                                                   *
   * R Pub med article ID (PMID)                                          *
@@ -82,7 +80,6 @@ python3 setup.py install
 ```
 Usage
 -----
-
 The AAIndex module is made up of three modules for each AAindex database, with each having a Python class of the same name, when importing the package you should import the required database module:
 
 ```python
@@ -98,40 +95,23 @@ from aaindex import aaindex1
 
 full_record = aaindex1['CHOP780206']   #get full AAI record
 ''' full_record ->
-
-{'description': 'Normalized frequency of N-terminal non helical region (Chou-Fasman, 1978b)', 
-'notes': '', 'refs': "Chou, P.Y. and Fasman, G.D. 'Prediction of the secondary structure of 
-proteins from their amino acid sequence' Adv. Enzymol. 47, 45-148 (1978); Kawashima, S. 
-and Kanehisa, M.                     'AAindex: amino acid index database.'  Nucleic Acids 
-Res. 28, 374 (2000).", 'values': {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, 'E': 1.04, 
-'F': 0.93, 'G': 1.41, 'H': 1.22, 'I': 0.78, 'K': 1.01, 'L': 0.85, 'M': 0.83, 'N': 1.42, 
-'P': 1.1, 'Q': 0.75, 'R': 0.34, 'S': 1.55, 'T': 1.09, 'V': 0.75, 'W': 0.62, 'Y': 0.99}}
+{'category': 'sec_struct', 'correlation_coefficients': {}, 'description': 'Normalized frequency of N-terminal non helical region (Chou-Fasman, 1978b)', 'notes': '', 'pmid': '364941', 'references': "Chou, P.Y. and Fasman, G.D. 'Prediction of the secondary structure of proteins from their amino acid sequence' Adv. Enzymol. 47, 45-148 (1978)", 'values': {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, 'E': 1.04, 'F': 0.93, 'G': 1.41, 'H': 1.22, 'I': 0.78, 'K': 1.01, 'L': 0.85, 'M': 0.83, 'N': 1.42, 'P': 1.1, 'Q': 0.75, 'R': 0.34, 'S': 1.55, 'T': 1.09, 'V': 0.75, 'W': 0.62, 'Y': 0.99}}
 '''
 #get individual elements of AAIndex record
 record_values = aaindex1['CHOP780206']['values']
+#'values': {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, 'E': 1.04, 'F': 0.93, 'G': 1.41, 'H': 1.22, 'I': 0.78, 'K': 1.01, 'L': 0.85, 'M': 0.83, 'N': 1.42, 'P': 1.1, 'Q': 0.75, 'R': 0.34, 'S': 1.55, 'T': 1.09, 'V': 0.75, 'W': 0.62, 'Y': 0.99}
 record_description = aaindex1['CHOP780206']['description']
+#'description': 'Normalized frequency of N-terminal non helical region (Chou-Fasman, 1978b)'
 record_references = aaindex1['CHOP780206']['refs']
+#'references': "Chou, P.Y. and Fasman, G.D. 'Prediction of the secondary structure of proteins from their amino acid sequence' Adv. Enzymol. 47, 45-148 (1978)"
 record_notes = aaindex1['CHOP780206']['notes']
-record_ = aaindex1['CHOP780206']['notes']
-record_ = aaindex1['CHOP780206']['notes']
-record_ = aaindex1['CHOP780206']['notes']
-
-```
-### Get category from AAIndex record:
-```python
-
-"""
-Categories: 
-Each AAIndex record is classified into 1 of 8 categories: Charge, Composition, 
-Flexibility, Geometry, Hydrophobic, Meta, Observable, Polar and Secondary 
-Structure. The record categories are parsed from the aaindex_categories.txt 
-file and can be accessed for each record via the get_category_from_record() 
-function.
-"""
-full_record = aaindex1['CHOP780206']   #get full AAI record
-category = aaindex1.get_category_from_record('CHOP780206')
-
-
+#""
+record_correlation_coefficient = aaindex1['CHOP780206']['correlation_coefficient']
+#{}
+record_pmid = aaindex1['CHOP780206']['pmid']
+#364941
+record_category = aaindex1['CHOP780206']['category']
+#sec_struct
 ```
 
 ### Get total number of AAIndex records
@@ -177,7 +157,7 @@ Distributed under the MIT License. See `LICENSE` for more details.
 
 References
 ----------
-\[1\]: https://www.genome.jp/aaindex/ <br><br>
+\[1\]: https://www.genome.jp/aaindex/ <br>
 \[2\]: Shuichi Kawashima, Minoru Kanehisa, AAindex: Amino Acid index database, Nucleic Acids Research, Volume 28, Issue 1, 1 January 2000, Page 374, https://doi.org/10.1093/nar/28.1.374
 
 [Back to top](#TOP)
