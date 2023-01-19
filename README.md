@@ -35,6 +35,29 @@ This aaindex Python software package is a very lightweight way of accessing the 
 ### Format of AAIndex record
 ![alt text](https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_example.png)
 
+```
+  ************************************************************************
+  *                                                                      *
+  * Each entry has the following format.                                 *
+  *                                                                      *
+  * H Accession number                                                   *
+  * D Data description                                                   *
+  * R Pub med article ID (PMID)                                          *
+  * A Author(s)                                                          *
+  * T Title of the article                                               *
+  * J Journal reference                                                  *
+  * * Comment or missing                                                 *
+  * C Accession numbers of similar entries with the correlation          *
+  *   coefficients of 0.8 (-0.8) or more (less).                         *
+  *   Notice: The correlation coefficient is calculated with zeros       *
+  *   filled for missing values.                                         *
+  * I Amino acid index data in the following order                       *
+  *   Ala    Arg    Asn    Asp    Cys    Gln    Glu    Gly    His    Ile *
+  *   Leu    Lys    Met    Phe    Pro    Ser    Thr    Trp    Tyr    Val *
+  * //                                                                   *
+  ************************************************************************
+  
+```
 A demo of the software is available [here](https://github.com/amckenna41/aaindex).
 
 Requirements
