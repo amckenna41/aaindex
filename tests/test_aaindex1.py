@@ -23,7 +23,7 @@ class AAIndexTests(unittest.TestCase):
 
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
-        self.assertEqual(__version__, "1.0.1",
+        self.assertEqual(__version__, "1.0.2",
             "aaindex version is not correct, got: {}".format(metadata("aaindex")['version']))
         self.assertEqual(metadata("aaindex")['name'], "aaindex", 
             "aaindex software name is not correct, got: {}".format(metadata("aaindex")['name']))
@@ -38,8 +38,8 @@ class AAIndexTests(unittest.TestCase):
         self.assertEqual(metadata('aaindex')['license'], "MIT", 
             "aaindex license type is not correct, got: {}".format(metadata('aaindex')['license']))
         self.assertEqual(metadata('aaindex')['summary'], 
-            "aaindex is a lightweight Python software package for accessing the data in the various AAIndex databases, \
-               which represent the physiochemical and biochemical properties of amino acids as numerical indices.", 
+            "aaindex is a lightweight Python software package for accessing the data in the various AAIndex databases,"
+            " which represent the physiochemical and biochemical properties of amino acids as numerical indices.", 
                     "aaindex package summary is not correct, got: {}".format(metadata('aaindex')['summary']))
         self.assertEqual(metadata('aaindex')['keywords'], 
             ["amino acid index", "bioinformatics", "protein engineering", "python", "pypi",
