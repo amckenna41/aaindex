@@ -5,26 +5,30 @@ orbs:
   python: circleci/python@2.1.1
 
 jobs:
-  #run unittests
   build-and-test:
     executor: python/default
+    environment:
+      PYTHONPATH=./aaindex
+    #install python dependancies and libraries, checkout repo
     steps:
       - checkout
-      - run:
-          name: Run tests
-          command: python -m unittest discover tests/
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - .
+      - python/load-cache
+      - python/install-deps
+      - python/save-cache
+      - python/test #run unit tests using pytest
 
   #linter and code coverage
   lint-and-coverage:
     executor: python/default
     description: |
       Running lint using flake8 and coverage report on package.
+    environment:
+      PYTHONPATH=./aaindex
     steps:
       - checkout
+      - python/load-cache
+      - python/install-deps
+      - python/save-cache
       - python/install-packages:
           pkg-manager: pip 
       - run:
@@ -55,9 +59,14 @@ jobs:
       executor: python/default
       description: |
         Running package safety and bandit security check on package.
+      environment:
+        PYTHONPATH=./aaindex
       #install python dependancies and libraries, checkout repo
       steps:
         - checkout
+        - python/load-cache
+        - python/install-deps
+        - python/save-cache
         - python/install-packages:
             pkg-manager: pip 
         - run:
@@ -86,9 +95,14 @@ jobs:
       executor: python/default
       description: |
         Running aaindex pipeline to check installation and version of package.
+      environment:
+        PYTHONPATH=./aaindex
       #install python dependancies and libraries, checkout repo
       steps:
         - checkout
+        - python/load-cache
+        - python/install-deps
+        - python/save-cache
         - python/install-packages:
             pkg-manager: pip 
         - run:

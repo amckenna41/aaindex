@@ -4,14 +4,14 @@
 </p>
 
 [![AAIndex](https://img.shields.io/pypi/v/aaindex)](https://pypi.org/project/aaindex/)
-[![pytest](https://github.com/amckenna41/aaindex/workflows/Building%20and%20Testing/badge.svg)](https://github.com/amckenna41/aaindex/actions?query=workflowBuilding%20and%20Testing)
-<!-- [![Build](https://img.shields.io/github/workflow/status/amckenna41/aaindex/Deploy%20to%20PyPI%20%F0%9F%93%A6)](https://github.com/amckenna41/aaindex/actions) -->
-[![CircleCI](https://circleci.com/gh/amckenna41/aaindex.svg?style=svg&circle-token=d860bb64668be19d44f106841b80eb47a8b7e7e8)](https://app.circleci.com/pipelines/github/amckenna41/aaindex)
 [![Platforms](https://img.shields.io/badge/platforms-linux%2C%20macOS%2C%20Windows-green)](https://pypi.org/project/aaindex/)
 [![PythonV](https://img.shields.io/pypi/pyversions/aaindex?logo=2)](https://pypi.org/project/aaindex/)
+[![pytest](https://github.com/amckenna41/aaindex/workflows/Building%20and%20Testing/badge.svg)](https://github.com/amckenna41/aaindex/actions?query=workflowBuilding%20and%20Testing)
+[![CircleCI](https://circleci.com/gh/amckenna41/aaindex.svg?style=svg&circle-token=d860bb64668be19d44f106841b80eb47a8b7e7e8)](https://app.circleci.com/pipelines/github/amckenna41/aaindex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 [![Issues](https://img.shields.io/github/issues/amckenna41/aaindex)](https://github.com/amckenna41/aaindex/issues)
 [![Size](https://img.shields.io/github/repo-size/amckenna41/aaindex)](https://github.com/amckenna41/aaindex)
+<!-- [![Build](https://img.shields.io/github/workflow/status/amckenna41/aaindex/Deploy%20to%20PyPI%20%F0%9F%93%A6)](https://github.com/amckenna41/aaindex/actions) -->
 <!-- [![Commits](https://img.shields.io/github/commit-activity/w/amckenna41/aaindex)](https://github.com/amckenna41/aaindex) -->
 
 Table of Contents
@@ -54,7 +54,6 @@ This aaindex Python software package is a very lightweight way of accessing the 
   *   Leu    Lys    Met    Phe    Pro    Ser    Thr    Trp    Tyr    Val *
   * //                                                                   *
   ************************************************************************
-  
 ```
 A demo of the software is available [here](https://github.com/amckenna41/aaindex).
 
@@ -142,11 +141,6 @@ To run all tests, from the main aaindex folder run:
 python3 -m unittest discover
 ```
 
-To run main test module, from the main aaindex folder run:
-```
-python -m unittest tests.test_aaindex -v
-```
-
 Contact
 -------
 If you have any questions or comments, please contact amckenna41@qub.ac.uk or raise an issue on the [Issues][Issues] tab.
@@ -166,5 +160,5 @@ References
 [numpy]: https://numpy.org/
 [pandas]: https://pandas.pydata.org/
 [requests]: https://docs.python-requests.org/en/latest/
-[Issues]: https://github.com/amckenna41/pySAR/issues
+[Issues]: https://github.com/amckenna41/aaindex/issues
 

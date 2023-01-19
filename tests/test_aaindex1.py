@@ -23,7 +23,7 @@ class AAIndexTests(unittest.TestCase):
 
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
-        self.assertEqual(__version__, "1.0.2",
+        self.assertEqual(__version__, "1.0.1",
             "aaindex version is not correct, got: {}".format(metadata("aaindex")['version']))
         self.assertEqual(metadata("aaindex")['name'], "aaindex", 
             "aaindex software name is not correct, got: {}".format(metadata("aaindex")['name']))
