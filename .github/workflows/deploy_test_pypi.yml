@@ -20,7 +20,7 @@ jobs:
       matrix:
         python-version: [3.8]  #deploying using one Python version on 1 runner
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -35,7 +35,7 @@ jobs:
         python3 setup.py install
 
     # build distribution package of software and upload to the test PYPi server
-    - name: Build and Upload to TestPyPI
+    - name: Build and upload to TestPyPI
       run: |
         python3 setup.py sdist bdist_wheel
         twine check dist/*
