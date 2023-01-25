@@ -11,10 +11,9 @@ import aaindex
 if sys.version_info[0] < 3:
     sys.exit('Python 3 is the minimum version requirement')
 
+#parse readme file
 HERE = pathlib.Path(__file__).parent
 README = (HERE / 'README.md').read_text()
-
-
 
 setup(name=aaindex.__name__,
       version=aaindex.__version__,

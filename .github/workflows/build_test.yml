@@ -18,6 +18,7 @@ on:
 jobs:
   # test job, waits for build job to complete
   test:
+    timeout-minutes: 15
     name: Setup environment
     runs-on: ubuntu-latest        
     strategy:

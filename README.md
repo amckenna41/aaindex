@@ -1,4 +1,4 @@
-## Python package for working with AAIndex database (https://www.genome.jp/aaindex/) <a name="TOP"></a>
+## Python package for working with the AAIndex database (https://www.genome.jp/aaindex/) <a name="TOP"></a>
 <p align="center">
   <img src="https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_logo.png" />
 </p>
@@ -30,7 +30,7 @@ Introduction
 ------------
 The AAindex is a database of numerical indices representing various physicochemical and biochemical properties of amino acids and pairs of amino acids. The AAindex consists of three sections: AAindex1 for the amino acid index of 20 numerical values, AAindex2 for the amino acid mutation matrix and AAindex3 for the statistical protein contact potentials. All data are derived from published literature [[1]](#references). 
 
-This aaindex Python software package is a very lightweight way of accessing the data represented in the various AAIndex databases. Minimal requirements and external libraries are required to use the package and any record and its associated data/numerical indices can be accessed in one line. Currently the software supports the AAIndex1 database with plans to include the AAIndex 2 & 3 in the future. The format of an AAIndex1 record can be seen below:
+This `aaindex` Python software package is a very lightweight way of accessing the data represented in the various AAIndex databases. Minimal requirements and external libraries are required to use the package and any record and its associated data/numerical indices can be accessed in one line. Currently the software supports the AAIndex1 database with plans to include the AAIndex 2 & 3 in the future. The format of an AAIndex1 record can be seen below:
 
 ### Format of AAIndex record
 ![alt text](https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_example.png)
@@ -55,17 +55,25 @@ This aaindex Python software package is a very lightweight way of accessing the 
   * //                                                                   *
   ************************************************************************
 ```
-A demo of the software is available [here](https://github.com/amckenna41/aaindex).
+<strong>A demo of the software is available [here](https://github.com/amckenna41/aaindex). </strong>
 
 Requirements
 ------------
 * [Python][python] >= 3.6
+* [aaindex][aaindex] >= 0.0.2
+* [requests][requests] >= 2.25.0
 * [numpy][numpy] >= 1.16.0
-* [requests][requests] >= 2.24.0
+* [pandas][pandas] >= 1.1.0
+* [sklearn][sklearn] >= 0.24
+* [scipy][scipy] >= 1.4.1
+* [tqdm][tqdm] >= 4.55.0
+* [seaborn][seaborn] >= 0.11.1
+* [biopython][biopython] >= 1.79
+* [varname][varname] >= 0.8.1
 
 Installation
 -----------------
-Install the latest version of aaindex using pip:
+Install the latest version of `aaindex` using pip:
 
 ```bash
 pip3 install aaindex --upgrade
@@ -97,48 +105,62 @@ full_record = aaindex1['CHOP780206']   #get full AAI record
 {'category': 'sec_struct', 'correlation_coefficients': {}, 'description': 'Normalized frequency of N-terminal non helical region (Chou-Fasman, 1978b)', 'notes': '', 'pmid': '364941', 'references': "Chou, P.Y. and Fasman, G.D. 'Prediction of the secondary structure of proteins from their amino acid sequence' Adv. Enzymol. 47, 45-148 (1978)", 'values': {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, 'E': 1.04, 'F': 0.93, 'G': 1.41, 'H': 1.22, 'I': 0.78, 'K': 1.01, 'L': 0.85, 'M': 0.83, 'N': 1.42, 'P': 1.1, 'Q': 0.75, 'R': 0.34, 'S': 1.55, 'T': 1.09, 'V': 0.75, 'W': 0.62, 'Y': 0.99}}
 '''
 #get individual elements of AAIndex record
-record_values = aaindex1['CHOP780206']['values']
+record_values = aaindex1['CHOP780206']['values'] 
+record_values = aaindex1['CHOP780206'].values
 #'values': {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, 'E': 1.04, 'F': 0.93, 'G': 1.41, 'H': 1.22, 'I': 0.78, 'K': 1.01, 'L': 0.85, 'M': 0.83, 'N': 1.42, 'P': 1.1, 'Q': 0.75, 'R': 0.34, 'S': 1.55, 'T': 1.09, 'V': 0.75, 'W': 0.62, 'Y': 0.99}
+
 record_description = aaindex1['CHOP780206']['description']
+record_description = aaindex1['CHOP780206'].description
 #'description': 'Normalized frequency of N-terminal non helical region (Chou-Fasman, 1978b)'
-record_references = aaindex1['CHOP780206']['refs']
+
+record_references = aaindex1['CHOP780206']['references']
+record_references = aaindex1['CHOP780206'].references
 #'references': "Chou, P.Y. and Fasman, G.D. 'Prediction of the secondary structure of proteins from their amino acid sequence' Adv. Enzymol. 47, 45-148 (1978)"
+
 record_notes = aaindex1['CHOP780206']['notes']
+record_notes = aaindex1['CHOP780206'].notes
 #""
+
 record_correlation_coefficient = aaindex1['CHOP780206']['correlation_coefficient']
+record_correlation_coefficient = aaindex1['CHOP780206'].correlation_coefficient
 #{}
-record_pmid = aaindex1['CHOP780206']['pmid']
+
+record_pmid = aaindex1['CHOP780206']['pmid']  
+record_pmid = aaindex1['CHOP780206'].pmid
 #364941
+
 record_category = aaindex1['CHOP780206']['category']
+record_category = aaindex1['CHOP780206'].category
 #sec_struct
+
 ```
 
 ### Get total number of AAIndex records
 ```python
 #get total number of records in AAI database
-print(aaindex1.get_num_records())
+aaindex1.num_records()
 
 ```
 
 ### Get list of all AAIndex record names
 ```python
 #get list of all AAIndex record names
-print(aaindex1.get_record_names())
+aaindex1.record_names()
 
 ```
 
 Directories
 -----------
-* `/tests` - unit and integration tests for aaindex package.
+* `/tests` - unit and integration tests for `aaindex` package.
 * `/aaindex` - source code and all required external data files for package.
 * `/images` - images used throughout README.
-* `/docs` - aaindex documentation.
+* `/docs` - `aaindex` documentation.
  
 Tests
 -----
-To run all tests, from the main aaindex folder run:
+To run all tests, from the main `aaindex` folder run:
 ```
-python3 -m unittest discover
+python3 -m unittest discover tests
 ```
 
 Contact
@@ -157,8 +179,9 @@ References
 [Back to top](#TOP)
 
 [python]: https://www.python.org/downloads/release/python-360/
+[aaindex]: https://github.com/amckenna41/aaindex
+[requests]: https://requests.readthedocs.io/en/latest/
 [numpy]: https://numpy.org/
-[pandas]: https://pandas.pydata.org/
-[requests]: https://docs.python-requests.org/en/latest/
+[PyPi]: https://pypi.org/project/aaindex/
+[demo]: https://colab.research.google.com/drive/1dccV_n1BRMiU8W13F9PPXbSaFzvOdQLC?usp=sharing
 [Issues]: https://github.com/amckenna41/aaindex/issues
-

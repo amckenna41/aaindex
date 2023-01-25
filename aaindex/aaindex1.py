@@ -13,12 +13,11 @@ from difflib import get_close_matches
 import csv
 import urllib.request as request
 from contextlib import closing
-from difflib import get_close_matches
 
 #global vars
 DOWNLOAD_USING = 'ftp'
 
-class AAIndex():
+class AAIndex1():
     """
             Python parser for AAindex1: Amino Acid Index Database (AAI)
     The AAindex is a database of numerical indices representing various physiochemical
@@ -71,18 +70,16 @@ class AAIndex():
         parse AAI indices into their respective categories.
     download_aaindex():
         download AAI database from its FTP server.
-    get_amino_acids():
+    amino_acids():
         get list of 20 amino acid letters.
     record_codes():
         get list of AAI record codes/Accession numbers.
-    get_num_records():
+    num_records():
         return total number of records in AAI database.
-    get_record_names():
+    record_names():
         return list of all descriptions for all records in AAI database.
     search():
         return 1 or more AAI records from its description.
-    get_ref_from_record():
-        return references for AAI record.
     __getitem__():
         access full aaindex record using its record code.
 
@@ -462,7 +459,7 @@ class AAIndex():
 
         return all_indices
 
-    def get_amino_acids(self):
+    def amino_acids(self):
         """
         Get all canonical amino acid letters. The '-' value will also be included
         in the list from this function as it accounts for the abcense of any
@@ -493,7 +490,7 @@ class AAIndex():
 
         return records
 
-    def get_num_records(self):
+    def num_records(self):
         """
         Calculate total number of records/indices in the AAI database.
 
@@ -504,7 +501,7 @@ class AAIndex():
         """
         return len(self.record_codes())
 
-    def get_record_names(self):
+    def record_names(self):
         """
         Return a list of all index descriptions for all records in the AAI database.
 
@@ -590,6 +587,57 @@ class AAIndex():
         #get full record from parsed JSON
         record = self.aaindex_json[record_code]
 
+        #create instance of map class which allows you to access dict using dot notation 
+        record = Map(record)
+
         return record
 
-aaindex1 = AAIndex()
+class Map(dict):
+    """
+    Instantiating this class will convert a dict such that it can be accessed using 
+    dot notation which makes it easier for accessing the individual elements of the 
+    aaindex records. It also works for nested dicts.
+
+    Parameters 
+    ----------
+    :dict : dict 
+        input dictionary to be mapped into dot notation.
+
+    Usage
+    -----
+    m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
+   
+    Reference
+    ---------
+    [1]: https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary
+    """
+    def __init__(self, *args, **kwargs):
+        super(Map, self).__init__(*args, **kwargs)
+        for arg in args:
+            if isinstance(arg, dict):
+                for k, v in arg.items():
+                    self[k] = v
+
+        if kwargs:
+            for k, v in kwargs.items():
+                self[k] = v
+
+    def __getattr__(self, attr):
+        return self.get(attr)
+
+    def __setattr__(self, key, value):
+        self.__setitem__(key, value)
+
+    def __setitem__(self, key, value):
+        super(Map, self).__setitem__(key, value)
+        self.__dict__.update({key: value})
+
+    def __delattr__(self, item):
+        self.__delitem__(item)
+
+    def __delitem__(self, key):
+        super(Map, self).__delitem__(key)
+        del self.__dict__[key]
+
+#create instance of aaindex1 class
+aaindex1 = AAIndex1()
