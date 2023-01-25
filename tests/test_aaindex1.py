@@ -89,23 +89,23 @@ class AAIndexTests(unittest.TestCase):
         r = requests.get(AA_INDEX3_URL, allow_redirects = True)
         self.assertEqual(r.status_code, 200, 'URL not returning Status Code 200.')
 
-    def test_get_amino_acids(self):
+    def test_amino_acids(self):
         """ Test Case to check that only valid Amino Acids are used within the AAIndex class. """
         valid_amino_acids = ['-', 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K',
             'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
-        amino_acids = aaindex1.get_amino_acids()
+        amino_acids = aaindex1.amino_acids()
 #1.)
         for aa in amino_acids:
             self.assertIn(aa, valid_amino_acids, 'Amino Acid {} not in valid \
                 amino acids: {}.'.format(aa, valid_amino_acids))
 
-    def test_num_features(self):
+    def test_num_records(self):
         """ Test Case to check that the correct number of indices/records are present
         in the AAIndex object. To date, 566 indices are present in the database. The 
         test takes into account if more features are added to the database in the future. """
 #1.)
-        self.assertTrue(aaindex1.get_num_records() >= 566, 'Incorrect number \
-            of features found in AAI1, wanted 566, got {}.'.format(aaindex1.get_num_records()))
+        self.assertTrue(aaindex1.num_records() >= 566, 'Incorrect number \
+            of features found in AAI1, wanted 566, got {}.'.format(aaindex1.num_records()))
 
     def test_feature_size(self):
         """ Test Case to check that the AAI1 has the correct dimensionality. Check that
@@ -597,13 +597,13 @@ class AAIndexTests(unittest.TestCase):
     def test_aaindex_names(self):
         """ Test Case to check that the correct names/description is returned for each index. """
         
-        record_names = aaindex1.get_record_names()
+        record_names = aaindex1.record_names()
         record_name1 = record_names[50]
         record_name2 = record_names[140]
         record_name3 = record_names[368]
         record_name4 = record_names[560]
 #1.)
-        self.assertEqual(len(record_names), aaindex1.get_num_records(), 
+        self.assertEqual(len(record_names), aaindex1.num_records(), 
             'Total number of names in the AAI1 database should equal the number of records.')
 #2.)
         self.assertEqual(record_name1, 'alpha-NH chemical shifts (Bundi-Wuthrich, 1979)',
