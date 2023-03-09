@@ -22,7 +22,7 @@ class AAIndexTests(unittest.TestCase):
 
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
-        self.assertEqual(__version__, "1.0.4",
+        self.assertEqual(__version__, "1.0.5",
             "aaindex version is not correct, got: {}".format(metadata("aaindex")['version']))
         self.assertEqual(metadata("aaindex")['name'], "aaindex", 
             "aaindex software name is not correct, got: {}".format(metadata("aaindex")['name']))
@@ -181,6 +181,11 @@ class AAIndexTests(unittest.TestCase):
             "Correlation Coefficients from AA1 record do not match the expected value.")
         self.assertEqual(record['values'], expected_index_code1_vals, 
             "Values for individual amino acids do not match expected.")
+        for aa, val in list(record['values'].items()):
+            if (aa == '-'):
+                continue
+            self.assertIsInstance(val, float, 
+                "Values in record values not of correct datatype, expected float, got {}.".format(type(val)))
 #2.)
         record = aaindex1[index_code2]
 
@@ -216,6 +221,11 @@ class AAIndexTests(unittest.TestCase):
             "Correlation Coefficients from AA1 record do not match the expected value.")
         self.assertEqual(record['values'], expected_index_code2_vals, 
             "Values for individual amino acids do not match expected.")
+        for aa, val in list(record['values'].items()):
+            if (aa == '-'):
+                continue
+            self.assertIsInstance(val, float, 
+                "Values in record values not of correct datatype, expected float, got {}.".format(type(val)))
 #3.)
         record = aaindex1[index_code3]
 
@@ -254,6 +264,11 @@ class AAIndexTests(unittest.TestCase):
             "Correlation Coefficients from AA1 record do not match the expected value.")
         self.assertEqual(record['values'], expected_index_code3_vals, 
             "Values for individual amino acids do not match expected.")
+        for aa, val in list(record['values'].items()):
+            if (aa == '-'):
+                continue
+            self.assertIsInstance(val, float, 
+                "Values in record values not of correct datatype, expected float, got {}.".format(type(val)))
 #4.)
         record = aaindex1[index_code4]
 
@@ -289,6 +304,11 @@ class AAIndexTests(unittest.TestCase):
             "Correlation Coefficients from AA1 record do not match the expected value.")
         self.assertEqual(record['values'], expected_index_code4_vals, 
             "Values for individual amino acids do not match expected.")
+        for aa, val in list(record['values'].items()):
+            if (aa == '-'):
+                continue
+            self.assertIsInstance(val, float, 
+                "Values in record values not of correct datatype, expected float, got {}.".format(type(val)))
 #5.)
         #testing value error raised when erroneous indices sought from object
         with self.assertRaises(ValueError):
@@ -305,7 +325,7 @@ class AAIndexTests(unittest.TestCase):
             are returned for the accessiom number/index codes using the 
             __getitem__ function, accessing the elements using the dot notation created
             from the Map class. """
-    #1.)
+#1.)
             #initialise test feature codes and their correct amino acid values
             index_code1 = 'KARP850103'
             expected_index_code1_vals = {'-': 0, 'A': 0.892, 'C': 0.925, 'D': 0.932, 
@@ -334,7 +354,7 @@ class AAIndexTests(unittest.TestCase):
             index_code5 = "ABCDEFGH"
             index_code6 = "123456"
             index_code7 = "blahblahblah"
-    #1.)
+#2.)
             #get amino acid values for inputted feature/index codes
             record = aaindex1[index_code1]
 
@@ -367,7 +387,7 @@ class AAIndexTests(unittest.TestCase):
                 "Correlation Coefficients from AA1 record do not match the expected value.")
             self.assertEqual(record.values, expected_index_code1_vals, 
                 "Values for individual amino acids do not match expected.")
-    #2.)
+#3.)
             record = aaindex1[index_code2]
 
             self.assertIn('description', list(record.keys()), 
@@ -403,7 +423,7 @@ class AAIndexTests(unittest.TestCase):
                 "Correlation Coefficients from AA1 record do not match the expected value.")
             self.assertEqual(record.values, expected_index_code2_vals, 
                 "Values for individual amino acids do not match expected.")
-    #3.)
+#4.)
             record = aaindex1[index_code3]
 
             self.assertIn('description', list(record.keys()), 
@@ -437,7 +457,7 @@ class AAIndexTests(unittest.TestCase):
                 "Correlation Coefficients from AA1 record do not match the expected value.")
             self.assertEqual(record.values, expected_index_code3_vals, 
                 "Values for individual amino acids do not match expected.")
-    #4.)
+#5.)
             record = aaindex1[index_code4]
 
             self.assertIn('description', list(record.keys()), 
@@ -471,7 +491,7 @@ class AAIndexTests(unittest.TestCase):
                 "Correlation Coefficients from AA1 record do not match the expected value.")
             self.assertEqual(record.values, expected_index_code4_vals, 
                 "Values for individual amino acids do not match expected.")
-    #5.)
+#6.)
             #testing value error raised when erroneous indices sought from object
             with self.assertRaises(ValueError):
                 feature_vals = aaindex1[index_code5]

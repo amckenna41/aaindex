@@ -62,6 +62,10 @@ class AAIndex1():
         4.17    4.36    4.52    4.66    4.44    4.50    4.35    4.70    4.60    3.95
     --------------------------------------------------------------------------------
 
+    Parameters
+    ----------
+    None
+    
     Methods
     -------
     parse_aaindex():
@@ -82,7 +86,7 @@ class AAIndex1():
         return 1 or more AAI records from its description.
     __getitem__():
         access full aaindex record using its record code.
-
+    
     References
     ----------
     [1]: Nakai, K., Kidera, A., and Kanehisa, M.;  Cluster analysis of
@@ -606,7 +610,21 @@ class Map(dict):
     Usage
     -----
     m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
-   
+    # Add new key
+    m.new_key = 'Hello world!'
+    # Or
+    m['new_key'] = 'Hello world!'
+    print m.new_key
+    print m['new_key']
+    # Update values
+    m.new_key = 'Yay!'
+    # Or
+    m['new_key'] = 'Yay!'
+    # Delete key
+    del m.new_key
+    # Or
+    del m['new_key']
+    
     Reference
     ---------
     [1]: https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary

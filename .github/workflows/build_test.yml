@@ -79,9 +79,8 @@ jobs:
         python3 -m pytest tests/
         
     #generate coverage report, output to file 
-    # - name: Generate Report
-    #   run: python3 -m pytest tests --cov=tests > artifacts/coverage.txt
-      # pytest --cov tests/ > coverage.txt
+    - name: Generate Report
+      run: pytest --cov=aaindex tests/ > artifacts/coverage.txt
 
     #upload to Code Coverage
     - name: Upload Coverage Report to Codecov

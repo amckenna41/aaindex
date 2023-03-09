@@ -39,7 +39,7 @@ jobs:
       run: |
         python3 setup.py sdist bdist_wheel
         twine check dist/*
-        python3 -m twine upload dist/*
+        twine upload dist/*
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}

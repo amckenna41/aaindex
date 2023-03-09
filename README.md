@@ -7,7 +7,7 @@
 [![Platforms](https://img.shields.io/badge/platforms-linux%2C%20macOS%2C%20Windows-green)](https://pypi.org/project/aaindex/)
 [![PythonV](https://img.shields.io/pypi/pyversions/aaindex?logo=2)](https://pypi.org/project/aaindex/)
 [![pytest](https://github.com/amckenna41/aaindex/workflows/Building%20and%20Testing/badge.svg)](https://github.com/amckenna41/aaindex/actions?query=workflowBuilding%20and%20Testing)
-[![CircleCI](https://circleci.com/gh/amckenna41/aaindex.svg?style=svg&circle-token=d860bb64668be19d44f106841b80eb47a8b7e7e8)](https://app.circleci.com/pipelines/github/amckenna41/aaindex)
+<!-- [![CircleCI](https://circleci.com/gh/amckenna41/aaindex.svg?style=svg&circle-token=d860bb64668be19d44f106841b80eb47a8b7e7e8)](https://app.circleci.com/pipelines/github/amckenna41/aaindex) -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 [![Issues](https://img.shields.io/github/issues/amckenna41/aaindex)](https://github.com/amckenna41/aaindex/issues)
 [![Size](https://img.shields.io/github/repo-size/amckenna41/aaindex)](https://github.com/amckenna41/aaindex)
@@ -30,9 +30,9 @@ Introduction
 ------------
 The AAindex is a database of numerical indices representing various physicochemical and biochemical properties of amino acids and pairs of amino acids. The AAindex consists of three sections: AAindex1 for the amino acid index of 20 numerical values, AAindex2 for the amino acid mutation matrix and AAindex3 for the statistical protein contact potentials. All data are derived from published literature [[1]](#references). 
 
-This `aaindex` Python software package is a very lightweight way of accessing the data represented in the various AAIndex databases. Minimal requirements and external libraries are required to use the package and any record and its associated data/numerical indices can be accessed in one line. Currently the software supports the AAIndex1 database with plans to include the AAIndex 2 & 3 in the future. The format of an AAIndex1 record can be seen below:
+This `aaindex` Python software package is a very lightweight way of accessing the data represented in the various AAIndex databases. Minimal requirements and external libraries are required to use the package and any record and its associated data/numerical indices can be accessed in one line. Currently the software supports the AAIndex1 database with plans to include the AAIndex 2 & 3 in the future. The format of an AAIndex1 record can be seen below.
 
-### Format of AAIndex record
+### Format of AAIndex1 record
 ![alt text](https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_example.png)
 
 ```
@@ -63,13 +63,6 @@ Requirements
 * [aaindex][aaindex] >= 0.0.2
 * [requests][requests] >= 2.25.0
 * [numpy][numpy] >= 1.16.0
-* [pandas][pandas] >= 1.1.0
-* [sklearn][sklearn] >= 0.24
-* [scipy][scipy] >= 1.4.1
-* [tqdm][tqdm] >= 4.55.0
-* [seaborn][seaborn] >= 0.11.1
-* [biopython][biopython] >= 1.79
-* [varname][varname] >= 0.8.1
 
 Installation
 -----------------
@@ -132,21 +125,18 @@ record_pmid = aaindex1['CHOP780206'].pmid
 record_category = aaindex1['CHOP780206']['category']
 record_category = aaindex1['CHOP780206'].category
 #sec_struct
-
 ```
 
 ### Get total number of AAIndex records
 ```python
 #get total number of records in AAI database
 aaindex1.num_records()
-
 ```
 
 ### Get list of all AAIndex record names
 ```python
 #get list of all AAIndex record names
 aaindex1.record_names()
-
 ```
 
 Directories
@@ -173,8 +163,8 @@ Distributed under the MIT License. See `LICENSE` for more details.
 
 References
 ----------
-\[1\]: https://www.genome.jp/aaindex/ <br>
-\[2\]: Shuichi Kawashima, Minoru Kanehisa, AAindex: Amino Acid index database, Nucleic Acids Research, Volume 28, Issue 1, 1 January 2000, Page 374, https://doi.org/10.1093/nar/28.1.374
+\[1\]: Shuichi Kawashima, Minoru Kanehisa, AAindex: Amino Acid index database, Nucleic Acids Research, Volume 28, Issue 1, 1 January 2000, Page 374, https://doi.org/10.1093/nar/28.1.374 <br>
+\[2\]: https://www.genome.jp/aaindex/ 
 
 [Back to top](#TOP)
 

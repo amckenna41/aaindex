@@ -76,5 +76,5 @@ from aaindex import aaindex3
 
 References
 ----------
-\[1\]: https://www.genome.jp/aaindex/ <br>
-\[2\]: Shuichi Kawashima, Minoru Kanehisa, AAindex: Amino Acid index database, Nucleic Acids Research, Volume 28, Issue 1, 1 January 2000, Page 374, https://doi.org/10.1093/nar/28.1.374
+\[1\]: Shuichi Kawashima, Minoru Kanehisa, AAindex: Amino Acid index database, Nucleic Acids Research, Volume 28, Issue 1, 1 January 2000, Page 374, https://doi.org/10.1093/nar/28.1.374 <br>
+\[2\]: https://www.genome.jp/aaindex/ 

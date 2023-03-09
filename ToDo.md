@@ -35,4 +35,7 @@
 - [X] Remove one-hot encoding from aaindex, and sci-kit learn library. 
 - [X] Below aaindex record image in readme - add description of each record key.
 - [X] Unit tests to check that aaindex1 can be accessed using dot notation. 
-- [ ] Double check usage in aaindex/readme.md
+- [X] Double check usage in aaindex/readme.md
+- [ ] Remove all camel casing function names/vars, change to underscores and lowercase (https://peps.python.org/pep-0008/#function-and-variable-names).
+- [X] Update dependancies so non-specific pandas/numpy version required.
+- [ ] Think about removing download_using and download function all together.
