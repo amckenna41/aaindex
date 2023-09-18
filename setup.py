@@ -4,12 +4,7 @@
 
 import pathlib
 from setuptools import setup, find_packages
-import sys
 import aaindex 
-
-#ensure python version is greater than 3
-if sys.version_info[0] < 3:
-    sys.exit('Python 3 is the minimum version requirement')
 
 #parse readme file
 HERE = pathlib.Path(__file__).parent
@@ -36,7 +31,6 @@ setup(name=aaindex.__name__,
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
@@ -48,13 +42,7 @@ setup(name=aaindex.__name__,
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-      install_requires=[
-          'numpy>=1.16.6',
-        #   'delayed',
-          'requests>=2.25',
-          'urllib3>=1.26'
-      ],
-
+      install_requires=[],
      packages=find_packages(),
      include_package_data=True,
      zip_safe=True)

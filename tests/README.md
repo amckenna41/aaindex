@@ -1,4 +1,4 @@
-# aaindex Tests
+# aaindex Unit Tests 🧪
 
 All tests in the project were ran using Python's unittest testing framework (https://docs.python.org/3/library/unittest.html).
 

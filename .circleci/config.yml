@@ -1,3 +1,4 @@
+#### Configuration file for CircleCI CI/CD ####
 version: 2.1
 
 #create Python env
@@ -13,7 +14,10 @@ jobs:
       - checkout
       - run:
           name: Run tests
-          command: python -m unittest discover tests/
+          command: |
+            pip3 install importlib-metadata
+            python3 setup.py install
+            python -m unittest discover tests/
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -34,15 +38,9 @@ jobs:
             pip install flake8
             flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics > /tmp/flake8_output.txt || true
             flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics >> /tmp/flake8_output.txt || true
-      - run:
-          name: Coverage
-          command: |
-            pip install coverage
-            pip install codecov
-            pip install pytest-cov
-            pytest --cov-report term --cov=test_aaindex tests/ > /tmp/coverage_report.txt || true
-        # coverage run 
-        # coverage report > /tmp/coverage_report.txt || true
+      - codecov/upload:
+          file: coverage.xml
+          flags: aaindex_coverage
       #store linter and coverage artifacts in tmp folder
       - store_artifacts:
           path: /tmp/coverage_report.txt
@@ -70,8 +68,7 @@ jobs:
             name: Bandit
             command: |
               pip install bandit
-              bandit -r aaindex > /tmp/bandit_output.txt || true
-              bandit -r tests > /tmp/bandit_output_tests.txt || true
+              bandit -r . > /tmp/bandit_output.txt || true
         #store safety and bandit artifacts in tmp folder
         - store_artifacts:
             path: /tmp/package_safety_output.txt
@@ -79,15 +76,13 @@ jobs:
         - store_artifacts:
             path: /tmp/bandit_output.txt
             destination: bandit-output.txt
-        - store_artifacts:
-            path: /tmp/bandit_output_tests.txt
-            destination: bandit-output-tests.txt
 
+  #verify installation of aaindex
   aaindex-pipeline:
       executor: python/default
       description: |
         Running aaindex pipeline to check installation and version of package.
-      #install python dependancies and libraries, checkout repo
+      #checkout repo
       steps:
         - checkout
         - python/install-packages:
@@ -104,31 +99,23 @@ workflows:
     jobs:
       - build-and-test:
           filters:
-            tags:
-              only: /.*/
             branches:
               only:
-                - master
+                - main
       - lint-and-coverage:
           filters:
-            tags:
-              only: /.*/
             branches:
               only:
-                - master
+                - main
       - safety-and-bandit:
           filters:
-            tags:
-              only: /.*/
             branches:
               only:
-                - master
+                - main
       - aaindex-pipeline:
           requires:
             - build-and-test
           filters:
-            tags:
-              only: /.*/
             branches:
               only:
-                - master
+                - main

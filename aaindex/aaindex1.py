@@ -1,33 +1,22 @@
 ################################################################################
-#################                    AAIndex                   #################
+################                    AAindex1                   #################
 ################################################################################
 
 #importing required modules and dependencies
 import json
-import numpy as np
 import os
 import sys, copy, re
-import requests
-import shutil
-from difflib import get_close_matches
 import csv
-import urllib.request as request
-from contextlib import closing
-
-#global vars
-DOWNLOAD_USING = 'ftp'
 
 class AAIndex1():
     """
-            Python parser for AAindex1: Amino Acid Index Database (AAI)
+            Python parser for AAindex1: Amino Acid Index Database.
     The AAindex is a database of numerical indices representing various physiochemical
     and biochemical properties of amino acids and pairs of amino acids. This class 
     stores the amino acid index of 20 numerical values for the 20 amino acids 
     (http://www.genome.jp/aaindex/).
-    Some of the parsing functionality is patrially inspired off the AAIndex1 parser
-    by harmslab: https://github.com/harmslab/hops/blob/master/hops/features/data/util/aaindex2json.py
 
-    Data format of AAI1:
+    Data format of AAi1:
     ************************************************************************
     *                                                                      *
     * Each entry has the following format.                                 *
@@ -63,32 +52,30 @@ class AAIndex1():
     --------------------------------------------------------------------------------
 
     Parameters
-    ----------
+    ==========
     None
     
     Methods
-    -------
+    =======
     parse_aaindex():
-        parse AAI database into JSON format.
+        parse AAi database into JSON format.
     parse_categories(aaindex_category_file):
-        parse AAI indices into their respective categories.
-    download_aaindex():
-        download AAI database from its FTP server.
+        parse and map AAi indices to their respective categories.
     amino_acids():
-        get list of 20 amino acid letters.
+        get list of 20 canonical amino acid letters.
     record_codes():
-        get list of AAI record codes/Accession numbers.
+        get list of all AAi record codes/Accession numbers in AA1 database.
     num_records():
-        return total number of records in AAI database.
+        return total number of records currently in AAi1 database.
     record_names():
-        return list of all descriptions for all records in AAI database.
+        return list of all descriptions for all records in AAi1 database.
     search():
-        return 1 or more AAI records from its description.
+        return 1 or more AAi records from its description.
     __getitem__():
-        access full aaindex record using its record code.
+        access full AAi record using its record code/accession number.
     
     References
-    ----------
+    ==========
     [1]: Nakai, K., Kidera, A., and Kanehisa, M.;  Cluster analysis of
          amino acid indices for prediction of protein structure and
          function.  Protein Eng. 2, 93-100 (1988)
@@ -99,35 +86,24 @@ class AAIndex1():
          index database.  Nucleic Acids Res. 27, 368-369 (1999).
     [4]: Kawashima, S. and Kanehisa, M.;  AAindex: amino acid index
          database.  Nucleic Acids Res. 28, 374 (2000).
+    [5]: https://github.com/harmslab/hops
     """
     def __init__(self):
-
+        
+        #initialise class variables/attributes
         self.aaindex_module_path = os.path.dirname(os.path.abspath(sys.modules[self.__module__].__file__))
         self.data_dir = "data"
         self.aaindex_filename = "aaindex1"
-        self.download_using = DOWNLOAD_USING
-
-        #download AAI database using ftp or https
-        if self.download_using =='ftp':
-            self.url = "ftp://ftp.genome.jp/pub/db/community/aaindex/aaindex1"
-        elif self.download_using =='http' or self.download_using =='https':
-            self.url = "https://www.genome.jp/ftp/db/community/aaindex/aaindex1"
-        else:
-            self.url = "ftp://ftp.genome.jp/pub/db/community/aaindex/aaindex1"
-
-        #if AAIndex database not found in data directory then call download method
-        if not (os.path.isfile(os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename))):
-            self.download_aaindex()
 
         #get dict of categories
         self.categories = self.get_all_categories()
 
-        #if parsed json of AAIndex already in file then read it and return 
+        #if parsed json of AAindex (aaindex1.json) already in file then read it and return 
         if (os.path.isfile(os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename + '.json'))):
             with open(os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename + '.json')) as aai_json:
                 self.aaindex_json = json.load(aai_json)
         else:
-            #parse AAIndex database file into JSON format
+            #parse AAindex database file into JSON format
             self.aaindex_json = self.parse_aaindex()
 
         #get last updated - as shown on homepage (https://www.genome.jp/aaindex/)
@@ -135,18 +111,22 @@ class AAIndex1():
 
     def parse_aaindex(self):
         """
-        Parse AAI database into JSON format. Each AAI record will be indexed by
+        Parse AAi database into JSON format. Each AAi record will be indexed by
         its accession number/index code, and will be in the format as shown in the
         docstring above, with the addition of a category key which shows the type/
-        category of the record in question. The file will be stored in a json file 
-        determined by AAINDEX_FILENAME variable.
-
+        category of the record in question. The file will be stored in the data 
+        folder in the aaindex module path in json format.
+        
+        Parameters
+        ==========
+        None
+    
         Returns
-        -------
+        =======
         :aaindex_json : dict
-          parsed AAI database in dict form.
+          parsed AAi database in dict form.
         """
-        #initialise keys of AAI database
+        #initialise keys of AAi database
         template_dict = {"H":[],
                          "D":[],
                          "R":[],
@@ -157,7 +137,7 @@ class AAIndex1():
                          "C":[],
                          "I":[]}
 
-        #open AAI file for reading and parsing, by default it should be stored in self.data_dir
+        #open AAi file for reading and parsing, by default it should be stored in self.data_dir
         try:
             tmp_filepath = os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename)
             f = open(tmp_filepath,'r')
@@ -169,15 +149,15 @@ class AAIndex1():
         lines = f.readlines()
         f.close()
 
-        #pattern that seperates each AAI record
+        #pattern that seperates each AAi record
         clean_up_pattern = re.compile("\"")
 
-        #initilaise parsed AAI database dictionary
+        #initilaise parsed AAi database dictionary
         aaindex_json = {}
         current_dict = copy.deepcopy(template_dict)
 
         '''
-        iterate through each line in the AAI database, parsing each record and its
+        iterate through each line in the AAi database, parsing each record and its
         amino acid values into its own entry in the dictionary. Each index/record
         is seperated by a '//'. Remove any duplicate records, set any missing
         ('-') or NA amino acid values to 0. Store resulting dict into aaindex_json
@@ -186,7 +166,7 @@ class AAIndex1():
         for l in lines:
             if l.startswith("//"):
 
-                # handle meta data of each record - name, desc, citation, notes
+                # handle meta data of each record - name, desc, citation, pmid, notes
                 name = " ".join(current_dict["H"])
                 name = clean_up_pattern.sub("'", name)
 
@@ -198,9 +178,6 @@ class AAIndex1():
                                                " ".join(current_dict["T"]),
                                                " ".join(current_dict["J"]))
                 references = clean_up_pattern.sub("'", references)
-
-                # references = references + "; Kawashima, S. and Kanehisa, M."
-                #     "AAindex: amino acid index database.'  Nucleic Acids Res. 28, 374 (2000)."
 
                 #parse pub med article ID
                 pmid = " ".join(current_dict["R"])
@@ -247,7 +224,7 @@ class AAIndex1():
                 try:
                     aaindex_json[name]
                     err = "duplicate value name ({})".format(name)
-                    raise ValueError('Duplicate AAI Record name found')
+                    raise ValueError('Duplicate AAi Record name found')
                 except KeyError:
                     pass
 
@@ -273,14 +250,14 @@ class AAIndex1():
         #append '-' to each aa index entry to account for missing AA in a protein sequence
         for index in aaindex_json:
 
-            #add category to aaindex file
-            aaindex_json[index]['category'] = self.categories[index]
-            aaindex_json[index]['values']['-'] = 0
-
             #set any NA amino acid values to 0
             for val in aaindex_json[index]['values']:
                 if aaindex_json[index]['values'][val] == 'NA':
                     aaindex_json[index]['values'][val] = 0
+
+            #add category to aaindex file
+            aaindex_json[index]['category'] = self.categories[index]
+            aaindex_json[index]['values']['-'] = 0
 
         #save parsed dictionary into JSON format to self.data_dir
         with open((os.path.join(self.aaindex_module_path, self.data_dir, 
@@ -289,67 +266,34 @@ class AAIndex1():
 
         return aaindex_json
 
-    def download_aaindex(self, save_dir="data"):
-        """
-        If AAI database not found in DATA directory, then it will be downloaded from
-        the dedicated FTP or HTTPS server from https://www.genome.jp/aaindex/.
-        FTP is the default method used for downloading the database with the URL:
-        "ftp://ftp.genome.jp/pub/db/community/aaindex/aaindex1". If you want to
-        download by https, set the 'DOWNLOAD_USING' variable to 'https'. The class
-        looks for the AAI database and its parsed JSON form in the 'data' directory, an
-        error will throw if not found.
-
-        Parameters
-        ----------
-        :save_dir : str (default = 'data')
-            Directory to save the AAI database to. By default it wil be stored in
-            the 'data' dir. Parameter has to point to a directory within the aaindex 
-            directory or there will be an error on instantiation of the class. 
-        """
-        #fetch AAI database from URL if not present in 'data' dir
-        try:
-            if not(os.path.isfile(os.path.join(self.aaindex_module_path, save_dir, self.aaindex_filename))):
-                try:
-                    with closing(request.urlopen(self.url)) as r:
-                        with open((os.path.join(self.aaindex_module_path, save_dir, self.aaindex_filename)), 'wb') as f:
-                            shutil.copyfileobj(r, f)
-                    print('AAIndex1 successfully downloaded.')
-                except requests.exceptions.RequestException:
-                    print('Error downloading or exporting AAIndex from the url {}.'.format(self.url))
-            else:
-                pass    #AAIndex already in folder
-        except:
-            raise OSError('Save Directory does not exist: {}.'.format(save_dir))
-
     def parse_categories(self, aaindex_category_file='aaindex_to_category.txt'):
         """
-        Parse category file which maps each AAI record in the databse into 1 of 8 categories.
+        Parse category file which maps each AAi record in the databse into 1 of 8 categories.
         Category file and parsing code inspired from: https://github.com/harmslab/hops. 
 
         Parameters
-        ----------
+        ==========
         :aaindex_category_file : str
             Name of category file to parse (default is "aaindex_to_category.txt"). If parameter
             is a file name then it will be imported from the 'data' directory by default, else
             it will be imported from its full path.
 
         Returns
-        -------
+        =======
         :aaindex_category : dict
-            Dictionary that maps each AAI record into 1 of 8 categories.
+            Dictionary that maps each AAi record into 1 of 8 categories.
         """
-        #if input parameter is a full path, read it else read from default 'data'
+        #if input parameter is a full path, read it else read from default 'data' dir
         if os.path.isfile(aaindex_category_file):
             try:
                 f = open(aaindex_category_file,'r')
             except IOError:
-                print('Error opening AAIndex1 category file {}.'
-                    .format(aaindex_category_file))
+                print('Error opening AAindex1 category file {}.'.format(aaindex_category_file))
         else:
             try:
                 f = open((os.path.join(self.aaindex_module_path, self.data_dir, aaindex_category_file)),'r')
             except IOError:
-                print('Error opening AAIndex1 category file, check {} is in {} directory.'
+                print('Error opening AAindex1 category file, check {} is in {} directory.'
                     .format(aaindex_category_file, self.data_dir))
 
         #get total number of lines in file
@@ -376,7 +320,7 @@ class AAIndex1():
 
         aaindex_category = {}
 
-        #iterate through all lines in parsed file and store AAI indices as keys
+        #iterate through all lines in parsed file and store AAi indices as keys
         #  in the output dict and their respective categories as the values of dict
         for i in range(0, len(d)):
           for j in range(0, len(d[i])):
@@ -395,14 +339,14 @@ class AAIndex1():
         parsed aaindex_categories.txt file created from parse_categories() function.
 
         Parameters
-        ----------
+        ==========
         :category_file : str (default = "aaindex_categories.txt")
             path to categories mapping file.
         
         Returns
-        -------
+        =======
         :aaindex_category : dict
-            Dictionary that maps each AAI record into 1 of 8 categories.
+            dictionary that maps each AAi record into 1 of 8 categories.
         """
         #if parsed categories file doesn't exist in 'data' then call function to get it
         if not (os.path.isfile(os.path.join(self.aaindex_module_path, self.data_dir, category_file))):
@@ -414,12 +358,12 @@ class AAIndex1():
                 reader = csv.reader(f_out, delimiter="\t")
                 d = list(reader)
         except IOError:
-            print('Error opening AAIndex1 category file {}.'.format(category_file))
+            print('Error opening AAindex1 category file {}.'.format(category_file))
 
         aaindex_category = {}
 
-        #iterate through all lines in parsed file and store AAI indices as keys
-        #   in the output dict and their respective categories as the values of dict
+        #iterate through all lines in parsed file and store AAi indices as keys
+        # in the output dict and their respective categories as the values of dict
         for i in range(0, len(d)):
           for j in range(0, len(d[i])):
             category_substring = d[i][1].strip()
@@ -430,32 +374,35 @@ class AAIndex1():
 
     def search(self, description):
         """
-        Return 1 or more full AAI database records from their description. Search
+        Return 1 or more full AAi database records from their description. Search
         through the descriptions/names of all records in the database, returning
-        record(s) that match description input parameter.
+        record(s) that match description input parameter. If no matching records
+        found then an empty object will be returned.
 
         Parameters
-        ----------
-        :description : str
-            keywords to search for in all AAI1 records.
+        ==========
+        :description : list/str
+            keywords to search for in all AAi1 records. Can be a single string
+            or list of keywords to search for
 
         Returns
-        -------
+        =======
         :all_indices : dict
-            AAIndex record(s) that contain the keywords in the description input parameter.
+            AAindex record(s) that contain the keywords in the description input parameter.
+            If no matching records found then an empty object will be returned.
         """
         all_indices = {}
 
         #if input param not a list or string then raisse type error
         if not (isinstance(description, list)) and not (isinstance(description, str)):
-            raise TypeError("Input Description parameter must be a list or str, got {}.".format(type(description)))
+            raise TypeError("Input description parameter must be a list or str, got {}.".format(type(description)))
 
         #convert description parameter to list to make iterable
         if not (isinstance(description, list)):
             description = [description]
 
         #iterate over description list, if keywords are in an aaindex record's description
-        #   then add record to all_indices object
+        # then add record to all_indices object
         for desc in description:
             for index, value in self.aaindex_json.items():
                 if (desc.lower() in self.aaindex_json[index]['description'].lower()):
@@ -465,15 +412,19 @@ class AAIndex1():
 
     def amino_acids(self):
         """
-        Get all canonical amino acid letters. The '-' value will also be included
-        in the list from this function as it accounts for the abcense of any
-        amino acid or gaps in a AAI record.
+        Get list of all canonical amino acid letters. The '-' value will also be included
+        in the list from this function as it accounts for the abcense of any amino acid 
+        or gaps in a AAi record.
+
+        Parameters
+        ==========
+        None
 
         Returns
-        -------
+        =======
         :amino_acids : list
             List of all 20 canonical amino acid letters as found in each record
-            of the AAI database.
+            of the AAi database.
         """
         amino_acids = list(self.aaindex_json[list(self.aaindex_json.keys())[0]]["values"].keys())
         amino_acids.sort()  #sort into alphabetical order
@@ -482,12 +433,15 @@ class AAIndex1():
 
     def record_codes(self):
         """
-        Get list of all AAI index codes/Accession numbers for each record in the database.
+        Get list of all AAi index codes/Accession numbers for each record in the database.
+
+        Parameters
+        ==========
 
         Returns
-        -------
+        =======
         :records : list
-            list of record names/index codes for all records in the AAI database.
+            list of record names/index codes for all records in the AAi database.
         """
         records = list(self.aaindex_json.keys())
         records.sort()  #sort into alphabetical order
@@ -496,23 +450,31 @@ class AAIndex1():
 
     def num_records(self):
         """
-        Calculate total number of records/indices in the AAI database.
+        Calculate total number of records/indices in the AAi database.
+
+        Parameters
+        ==========
+        None
 
         Returns
-        -------
+        =======
         :len(aaindex.record_codes()) : int
-            number of indices/records found in the AAI database.
+            number of indices/records found in the AAi database.
         """
         return len(self.record_codes())
 
     def record_names(self):
         """
-        Return a list of all index descriptions for all records in the AAI database.
+        Return a list of all index descriptions for all records in the AAi database.
+
+        Parameters
+        ==========
+        None
 
         Returns
-        -------
+        =======
         :desc : list
-            list of descriptions for all records in the AAI database.
+            list of descriptions for all records in the AAi database.
         """
         desc = []
 
@@ -525,20 +487,28 @@ class AAIndex1():
 ######################          Getters & Setters          ######################
 
     @property
-    def url(self):
-        return self._url
-
-    @url.setter
-    def url(self, value):
-        self._url = value
-
-    @property
     def categories(self):
         return self._categories
 
     @categories.setter
     def categories(self, value):
         self._categories = value
+
+    @property
+    def data_dir(self):
+        return self._data_dir
+
+    @data_dir.setter
+    def data_dir(self, value):
+        self._data_dir = value
+
+    @property
+    def aaindex_filename(self):
+        return self._aaindex_filename
+
+    @aaindex_filename.setter
+    def aaindex_filename(self, value):
+        self._aaindex_filename = value
 
     @property
     def last_updated(self):
@@ -550,43 +520,41 @@ class AAIndex1():
 
 ################################################################################
 
-    # def __repr__(self):
-    #     return "<AAIndex: {}>".format(self)
-
     def __sizeof__(self):
-        """ Return size of AAI database file """
+        """ Return size of AAi database file """
         return os.path.getsize(os.path.isfile(os.path.join(self.data_dir, self.aaindex_filename)))
 
     def __getitem__(self, record_code):
         """
-        Return full AAI database record details from its index code/Accession number by
-        making the whole database subscriptable.
+        Return full AAi database record details from its index code/Accession number by
+        making the whole database subscriptable. Raise error if invalid accession number
+        input.
 
         Parameters
-        ----------
+        ==========
         :record_code : str
-            AAI database record Accession number.
+            AAi database record Accession number.
 
         Returns
-        -------
+        =======
         :record : dict
-            dict of AAI database record.
+            dict of AAi database record.
 
         Usage
-        -----
-            aaindex = AAIndex()
-            full_record = aaindex['ZIMJ680105']
+        =====
+        aaindex = AAIndex()
+        full_record = aaindex['ZIMJ680105']
         """
-        #stripping input of whitespace
+        #stripping input of whitespace, uppercase
         try:
-            record_code = record_code.strip()
+            record_code = record_code.strip().upper()
         except:
-            raise TypeError('Input parameter {} is not of correct datatype string, got {}' \
+            raise TypeError('Input parameter {} is not of correct datatype string, got {}.' \
                 .format(record_code, type(record_code)))
 
-        #check that inputted record_code/Accession num does exist in the AAI database
+        #check that inputted record_code/Accession num does exist in the AAi database
         if record_code not in (self.record_codes()):
-            raise ValueError('Record Index ({}) not found in AAIndex'.format(record_code))
+            raise ValueError('Record Index ({}) not found in AAindex1.'.format(record_code))
         
         #get full record from parsed JSON
         record = self.aaindex_json[record_code]
@@ -603,12 +571,12 @@ class Map(dict):
     aaindex records. It also works for nested dicts.
 
     Parameters 
-    ----------
+    ==========
     :dict : dict 
         input dictionary to be mapped into dot notation.
 
     Usage
-    -----
+    =====
     m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
     # Add new key
     m.new_key = 'Hello world!'
@@ -625,8 +593,8 @@ class Map(dict):
     # Or
     del m['new_key']
     
-    Reference
-    ---------
+    References
+    ==========
     [1]: https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary
     """
     def __init__(self, *args, **kwargs):

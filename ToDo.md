@@ -1,14 +1,13 @@
-- [X] Look into implementing AAIndex2 & 3
+- [X] Look into implementing AAindex2 & 3
 - [ ] Visualise function in class where you can do histogram/heat map etc of each amino acid and corresponding value.
-- [ ] Implement functionality to work with AAIndex 2 and 3 (https://github.com/Pymol-Scripts/Pymol-script-repo/blob/master/aaindex.py , https://github.com/pycogent/pycogent/blob/master/cogent/parse/aaindex.py)
+- [ ] Implement functionality to work with AAindex 2 and 3 (https://github.com/Pymol-Scripts/Pymol-script-repo/blob/master/aaindex.py , https://github.com/pycogent/pycogent/blob/master/cogent/parse/aaindex.py)
 - [X] Move aaindex into __init__ file, change imports in folders and readme's.
 - [X] Get rid of AAINDEX_FILENAME - make aaindex1 name static.
-- [ ] Add Contributing section to readme (https://github.com/arc298/instagram-scraper).
 - [X] Add references section to readme.
-- [ ] Remove ds_store from all folders.
+- [X] Remove ds_store from all folders.
 - [X] Ensure all files listed in readme of /data
-- [ ] Go through flake8 and bandit output.
-- [ ] Search by keyword, other ways to search?
+- [X] Go through flake8 and bandit output.
+- [X] Search by keyword, other ways to search?
 - [ ] Split individual aaindex properties into individual python @property decorator, using a Record class.
 - [ ] Use aaindex API URLs search_url = 'https://www.genome.jp/dbget-bin/www_bfind_sub?locale=en&serv=gn&keywords=charge&page=1&max_hit=0&dbkey=aaindex' , record_url = 'https://www.genome.jp/dbget-bin/www_bget?aaindex:KLEP840101'
 - [X] Parse main URL to check last updated: "Last updated: February 13, 2017"
@@ -19,7 +18,7 @@
 - [X] Update build/test workflow, similar to pySAR.
 - [ ] read the docs.
 - [ ] Add readthedocs badge - [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](http://ansicolortags.readthedocs.io/?badge=latest)
-- [ ] Add emojis to readme
+- [ ] Add emojis to readme - test if they show up on Mac and Windows.
 - [ ] Check variable naming conventions.
 - [ ] Change "secrets.PY_PI..." to "secrets.PYPI...".
 - [X] Add comments to .circle/workflow.
@@ -38,4 +37,15 @@
 - [X] Double check usage in aaindex/readme.md
 - [ ] Remove all camel casing function names/vars, change to underscores and lowercase (https://peps.python.org/pep-0008/#function-and-variable-names).
 - [X] Update dependancies so non-specific pandas/numpy version required.
-- [ ] Think about removing download_using and download function all together.
+- [X] Think about removing download_using and download function all together.
+- [X] Add and fix codecov and coverage installs from github workflow.
+- [X] Update workflows.
+- [ ] Can aaindex1 object accept lowercase version of index - add unit tests of lowercase indices.
+- [X] Remove delayed==0.11.0b1 from requirments.txt.
+- [X] Update setup.cfg.
+- [X] Change all comment underlining from "------" to "=======".
+- [X] Add methods comments to aaindex class and test classes.
+- [X] Mention its lightweight and requires no external python libraries to use.
+- [X] Change all refs of AAIndex to AAindex.
+- [X] Go over all modules etc.
+- [ ] Go over main readme.
