@@ -67,14 +67,14 @@ class AAIndex1_Tests(unittest.TestCase):
             "aaindex maintainer is not correct, got: {}".format(metadata('aaindex')['maintainer']))
         self.assertEqual(metadata('aaindex')['license'], "MIT", 
             "aaindex license type is not correct, got: {}".format(metadata('aaindex')['license']))
-        # self.assertEqual(metadata('aaindex')['summary'], 
-        #     "aaindex is a lightweight Python software package for accessing the data in the various AAindex databases,"
-        #     " which represent the physiochemical, biochemical and structural properties of amino acids as numerical indices.", 
-        #             "aaindex package summary is not correct, got: {}".format(metadata('aaindex')['summary']))
-        # self.assertEqual(metadata('aaindex')['keywords'], 
-        #     "amino acid index,aaindex,bioinformatics,protein engineering,python,pypi,physiochemical properties,"
-        #     "biochemical properties,proteins,protein structure prediction,pysar", 
-        #         "aaindex keywords are not correct, got: {}".format(metadata('aaindex')['keywords']))
+        self.assertEqual(metadata('aaindex')['summary'], 
+            "aaindex is a lightweight Python software package for accessing the data in the various AAindex databases,"
+            " which represent the physiochemical, biochemical and structural properties of amino acids as numerical indices.", 
+                    "aaindex package summary is not correct, got: {}".format(metadata('aaindex')['summary']))
+        self.assertEqual(metadata('aaindex')['keywords'], 
+            "amino acid index,aaindex,bioinformatics,protein engineering,python,pypi,physiochemical properties,"
+            "biochemical properties,proteins,protein structure prediction,pysar", 
+                "aaindex keywords are not correct, got: {}".format(metadata('aaindex')['keywords']))
 
     def test_url(self):
         """ Test Case to check that the URL endpoints that store the AAi databases return a 200 status code. """

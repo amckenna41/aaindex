@@ -16,6 +16,7 @@ jobs:
           name: Run tests
           command: |
             pip3 install importlib-metadata
+            pip3 install requests
             python3 setup.py install
             python -m unittest discover tests/
       - persist_to_workspace:
