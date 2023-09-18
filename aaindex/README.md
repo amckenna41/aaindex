@@ -1,10 +1,10 @@
-<!-- [![CircleCI](https://circleci.com/gh/amckenna41/aaindex.svg?style=svg&circle-token=d860bb64668be19d44f106841b80eb47a8b7e7e8)](https://app.circleci.com/pipelines/github/amckenna41/aaindex) -->
+# aaindex
+
 [![AAindex](https://img.shields.io/pypi/v/aaindex)](https://pypi.org/project/aaindex/)
 [![PythonV](https://img.shields.io/pypi/pyversions/aaindex?logo=2)](https://pypi.org/project/aaindex/)
-[![pytest](https://github.com/amckenna41/aaindex/workflows/Building%20and%20Testing/badge.svg)](https://github.com/amckenna41/aaindex/actions?query=workflowBuilding%20and%20Testing)
+[![Platforms](https://img.shields.io/badge/platforms-linux%2C%20macOS%2C%20Windows-green)](https://pypi.org/project/aaindex/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 
-*****
 AAindex1 Usage
 --------------
 ```python
@@ -22,6 +22,7 @@ full_record = aaindex1['CHOP780206']   #get full AAI record
 ''' full_record ->
 {'category': 'sec_struct', 'correlation_coefficients': {}, 'description': 'Normalized frequency of N-terminal non helical region (Chou-Fasman, 1978b)', 'notes': '', 'pmid': '364941', 'references': "Chou, P.Y. and Fasman, G.D. 'Prediction of the secondary structure of proteins from their amino acid sequence' Adv. Enzymol. 47, 45-148 (1978)", 'values': {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, 'E': 1.04, 'F': 0.93, 'G': 1.41, 'H': 1.22, 'I': 0.78, 'K': 1.01, 'L': 0.85, 'M': 0.83, 'N': 1.42, 'P': 1.1, 'Q': 0.75, 'R': 0.34, 'S': 1.55, 'T': 1.09, 'V': 0.75, 'W': 0.62, 'Y': 0.99}}
 '''
+
 #get individual elements of AAindex record
 record_values = aaindex1['CHOP780206']['values'] 
 record_values = aaindex1['CHOP780206'].values
@@ -52,15 +53,15 @@ record_category = aaindex1['CHOP780206'].category
 #sec_struct
 ```
 
-### Get total number of AAindex records
+### Get total number of AAindex1 records
 ```python
 #get total number of records in AAI database
 aaindex1.num_records()
 ```
 
-### Get list of all AAindex record names
+### Get list of all AAindex1 record names
 ```python
-#get list of all AAindex record names
+#get list of all AAindex1 record names
 aaindex1.record_names()
 ```
 
