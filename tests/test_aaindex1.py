@@ -53,7 +53,7 @@ class AAIndex1_Tests(unittest.TestCase):
             "aaindex version is not correct, got: {}.".format(metadata("aaindex")['version']))
         self.assertEqual(metadata("aaindex")['name'], "aaindex", 
             "aaindex software name is not correct, got: {}.".format(metadata("aaindex")['name']))
-        self.assertEqual(metadata("aaindex")['author'], "AJ McKenna, https://github.com/amckenna41", 
+        self.assertEqual(metadata("aaindex")['author'], "AJ McKenna: https://github.com/amckenna41", 
             "aaindex author is not correct, got: {}.".format(metadata("aaindex")['author']))
         self.assertEqual(metadata("aaindex")['author-email'], "amckenna41@qub.ac.uk", 
             "aaindex author email is not correct, got: {}.".format(metadata("aaindex")['author-email']))
