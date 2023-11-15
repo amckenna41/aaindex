@@ -6,7 +6,7 @@
 # get_values_from_record
 
 ##AAINDEX 2 ###
-###########
+#
 # class AAIndex2():
 
 #     def __init__(self):
@@ -326,5 +326,3 @@
 # # _parse('data/aaindex2', MatrixRecord)
 
 # # print(_aaindex['KOLA920101'].journal)
-
-

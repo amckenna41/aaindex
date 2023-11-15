@@ -4,7 +4,6 @@
 
 import os
 import unittest
-import requests
 from importlib.metadata import metadata
 from aaindex import aaindex1, __version__
 
@@ -16,21 +15,18 @@ class AAIndex1_Tests(unittest.TestCase):
     ==========
     test_aaindex_metadata:
         testing correct aaindex version and metadata.
-    test_url:
-         tesing Case to check that the URL endpoints that store the AAi databases 
-        return a 200 status code.
     test_num_records:
         testing to check that the correct number of indices/records are present
         in the AAindex object. 
     test_records:
         testing to check that the correct record data and amino acid values 
-        are returned for the accessiom number/index codes using the 
-        __getitem__ function.
+        are returned for the accessiom number/index codes using the __getitem__ 
+        function.
     test_records_dot_notation:
         testing to check that the correct record data and amino acid values 
-        are returned for the accessiom number/index codes using the 
-        __getitem__ function, accessing the elements using the dot notation created
-        from the Map class.
+        are returned for the accessiom number/index codes using the __getitem__ 
+        function, accessing the elements using the dot notation created from 
+        the Map class.
     test_search:
         testing search functionality where 1 or more aaindex1 records can be returned 
         if their description contains user-inputted keywords.
@@ -53,44 +49,28 @@ class AAIndex1_Tests(unittest.TestCase):
 
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
-        self.assertEqual(__version__, "1.1.1",
-            "aaindex version is not correct, got: {}".format(metadata("aaindex")['version']))
+        self.assertEqual(__version__, "1.1.2",
+            "aaindex version is not correct, got: {}.".format(metadata("aaindex")['version']))
         self.assertEqual(metadata("aaindex")['name'], "aaindex", 
-            "aaindex software name is not correct, got: {}".format(metadata("aaindex")['name']))
+            "aaindex software name is not correct, got: {}.".format(metadata("aaindex")['name']))
         self.assertEqual(metadata("aaindex")['author'], "AJ McKenna, https://github.com/amckenna41", 
-            "aaindex author is not correct, got: {}".format(metadata("aaindex")['author']))
+            "aaindex author is not correct, got: {}.".format(metadata("aaindex")['author']))
         self.assertEqual(metadata("aaindex")['author-email'], "amckenna41@qub.ac.uk", 
-            "aaindex author email is not correct, got: {}".format(metadata("aaindex")['author-email']))
+            "aaindex author email is not correct, got: {}.".format(metadata("aaindex")['author-email']))
         self.assertEqual(metadata('aaindex')['home-page'], "https://github.com/amckenna41/aaindex", 
-            "aaindex home page url is not correct, got: {}".format(metadata('aaindex')['home-page']))
+            "aaindex home page url is not correct, got: {}.".format(metadata('aaindex')['home-page']))
         self.assertEqual(metadata('aaindex')['maintainer'], "AJ McKenna", 
-            "aaindex maintainer is not correct, got: {}".format(metadata('aaindex')['maintainer']))
+            "aaindex maintainer is not correct, got: {}.".format(metadata('aaindex')['maintainer']))
         self.assertEqual(metadata('aaindex')['license'], "MIT", 
-            "aaindex license type is not correct, got: {}".format(metadata('aaindex')['license']))
+            "aaindex license type is not correct, got: {}.".format(metadata('aaindex')['license']))
         # self.assertEqual(metadata('aaindex')['summary'], 
-        #     "A lightweight Python software package for accessing the data in the various AAIndex databases, \
-        #     which represent the physiochemical, biochemical and structural properties of amino acids as numerical indices.", 
-        #             "aaindex package summary is not correct, got: {}".format(metadata('aaindex')['summary']))
+        #     "A lightweight Python software package for accessing the data in the various AAIndex databases, "
+        #     "which represent the physiochemical, biochemical and structural properties of amino acids as numerical indices.", 
+        #             "aaindex package summary is not correct, got:\n{}.".format(metadata('aaindex')['summary']))
         self.assertEqual(metadata('aaindex')['keywords'], 
             "amino acid index,aaindex,bioinformatics,protein engineering,python,pypi,physiochemical properties,"
             "biochemical properties,proteins,protein structure prediction,pysar", 
-                "aaindex keywords are not correct, got: {}".format(metadata('aaindex')['keywords']))
-
-    def test_url(self):
-        """ Test Case to check that the URL endpoints that store the AAi databases return a 200 status code. """
-        AA_INDEX1_URL_FTP = "https://www.genome.jp/ftp/db/community/aaindex/aaindex1"
-        AA_INDEX2_URL = "https://www.genome.jp/ftp/db/community/aaindex/aaindex2"
-        AA_INDEX3_URL = "https://www.genome.jp/ftp/db/community/aaindex/aaindex3"
-#1.)
-        #test URL endpoints for AAINDEX are active and give a 200 status code
-        request = requests.get(AA_INDEX1_URL_FTP, allow_redirects = True)
-        self.assertEqual(request.status_code, 200, 'Expected URL to return a 200 status code, got {}.'.format(request.status_code))
-
-        request = requests.get(AA_INDEX2_URL, allow_redirects = True)
-        self.assertEqual(request.status_code, 200, 'Expected URL to return a 200 status code, got {}.'.format(request.status_code))
-
-        request = requests.get(AA_INDEX3_URL, allow_redirects = True)
-        self.assertEqual(request.status_code, 200, 'Expected URL to return a 200 status code, got {}.'.format(request.status_code))
+                "aaindex keywords are not correct, got:\n{}.".format(metadata('aaindex')['keywords']))
 
     def test_amino_acids(self):
         """ Test Case to check that only valid Amino Acids are used within the AAindex class. """
@@ -99,22 +79,20 @@ class AAIndex1_Tests(unittest.TestCase):
         amino_acids = aaindex1.amino_acids()
 #1.)
         for aa in amino_acids:
-            self.assertIn(aa, valid_amino_acids, 'Amino Acid {} not in valid amino acids:\n{}.'.format(aa, valid_amino_acids))
+            self.assertIn(aa, valid_amino_acids, 'Amino Acid {} not in list of valid amino acids:\n{}.'.format(aa, valid_amino_acids))
 
     def test_num_records(self):
         """ Test Case to check that the correct number of indices/records are present
-        in the AAindex object. To date, 566 indices are present in the database. The 
-        test takes into account if more features are added to the database in the future. """
+        in the AAindex object. To date, 566 indices are present in the database. """
 #1.)
-        self.assertTrue(aaindex1.num_records() >= 566, 'Incorrect number\
-            of records found in AAi1, expected 566, got {}.'.format(aaindex1.num_records()))
+        self.assertEqual(aaindex1.num_records(), 566, 
+            'Incorrect number of records found in AAi1, expected 566, got {}.'.format(aaindex1.num_records()))
 
     def test_records(self):
         """ Test Case to check that the correct record data and amino acid values 
-        are returned for the accessiom number/index codes using the 
-        __getitem__ function. """
+        are returned for the accessiom number/index codes using the __getitem__ function. """
 #1.)
-        #initialise test records codes and their expected amino acid values
+        #initialise test records codes and their correct and expected amino acid values
         index_code1 = 'AURR980103'
         expected_index_code1_vals = {'A': 1.05, 'L': 0.96, 'R': 0.81, 'K': 0.97, 'N': 0.91,
             'M': 0.99, 'D': 1.39, 'F': 0.95, 'C': 0.6, 'P': 1.05, 'Q': 0.87,
@@ -142,6 +120,7 @@ class AAIndex1_Tests(unittest.TestCase):
         index_code5 = "ABCDEFGH"
         index_code6 = "123456"
         index_code7 = "blahblahblah"
+        index_code8 = ""
 #1.)
         #get amino acid values for inputted feature/index codes
         record = aaindex1[index_code1] #AURR980103
@@ -155,13 +134,19 @@ class AAIndex1_Tests(unittest.TestCase):
         self.assertIn('correlation_coefficients', list(record.keys()), "correlation_coefficients key not found in aaindex record object.")
 
         self.assertEqual(record['description'], "Normalized positional residue frequency at helix termini N' (Aurora-Rose, 1998)",
-            "Description from AAi1 record does not match the expected value.")
-        self.assertEqual(record['notes'], '', "Notes from AAi1 record does not match the expected value.")
-        self.assertTrue(record['references'].startswith("Aurora, R. and Rose, G."), "Reference from AAi1 record do not match the expected value.")
-        self.assertEqual(record['category'], 'sec_struct', "Category from AAi1 record does not match the expected value.")
-        self.assertEqual(record['pmid'], '9514257', "PMID from AAi1 record does not match the expected value.")
-        self.assertEqual(record['correlation_coefficients'], {}, "Correlation Coefficients from AAi1 record do not match the expected value.")
-        self.assertEqual(record['values'], expected_index_code1_vals, "Values for individual amino acids do not match expected.")
+            "Description from AAi1 record does not match the expected value, got {}.".format(record['description']))
+        self.assertEqual(record['notes'], '', 
+            "Notes from AAi1 record does not match the expected value, got {}.".format(record['notes']))
+        self.assertEqual(record['references'], "Aurora, R. and Rose, G. 'Helix capping' Protein Science 7, 21-38 (1998)", 
+            "Reference from AAi1 record do not match the expected value, got {}.".format(record['references']))
+        self.assertEqual(record['category'], 'sec_struct', 
+            "Category from AAi1 record does not match the expected value, got {}.".format(record['category']))
+        self.assertEqual(record['pmid'], '9514257', 
+            "PMID from AAi1 record does not match the expected value, got {}.".format(record['pmid']))
+        self.assertEqual(record['correlation_coefficients'], {}, 
+            "Correlation Coefficients from AAi1 record do not match the expected value, got {}.".format(record['correlation_coefficients']))
+        self.assertEqual(record['values'], expected_index_code1_vals, 
+            "Values for individual amino acids do not match expected, got\n{}.".format(record['values']))
         for aa, val in list(record['values'].items()):
             if (aa == '-'):
                 continue 
@@ -177,18 +162,26 @@ class AAIndex1_Tests(unittest.TestCase):
         self.assertIn('category', list(record.keys()), "category key not found in aaindex record object.")
         self.assertIn('pmid', list(record.keys()), "pmid key not found in aaindex record object.")
         self.assertIn('correlation_coefficients', list(record.keys()), "correlation_coefficients key not found in aaindex record object.")
-
+        
         self.assertEqual(record['description'], 'Helix-coil equilibrium constant (Finkelstein-Ptitsyn, 1977)',
-            "Description from AAi1 record does not match the expected value.")
-        self.assertEqual(record['notes'], '', "Notes from AAi1 record does not match the expected value.")
-        self.assertTrue(record['references'].startswith("Finkelstein, A.V. and Ptitsyn"), "References from AAi1 record do not match the expected value.")
-        self.assertEqual(record['category'], 'sec_struct', "Category from AAi1 record does not match the expected value.")
-        self.assertEqual(record['pmid'], '843599', "PMID from AAi1 record does not match the expected value.")
+            "Description from AAi1 record does not match the expected value, got {}.".format(record['description']))
+        self.assertEqual(record['notes'], '',
+            "Notes from AAi1 record does not match the expected value, got {}.".format(record['notes']))
+        self.assertEqual(record['references'], "Finkelstein, A.V. and Ptitsyn, O.B. 'Theory of protein molecule self-organization. "
+                          "II. A comparison of calculated thermodynamic parameters of local secondary structures with experiments' "
+                          "Biopolymers 16, 497-524 (1977) (Pro 0.096)", 
+            "Reference from AAi1 record do not match the expected value, got {}.".format(record['references']))
+        self.assertEqual(record['category'], 'sec_struct', 
+            "Category from AAi1 record does not match the expected value, got {}.".format(record['category']))
+        self.assertEqual(record['pmid'], '843599', 
+            "PMID from AAi1 record does not match the expected value, got {}.".format(record['pmid']))
         self.assertEqual(record['correlation_coefficients'], {'AURR980109': '0.802', 
             'AURR980113': '0.849', 'AURR980114': '0.875', 'KANM800103': '0.823', 
             'MAXF760101': '0.810', 'PTIO830101': '0.826', 'QIAN880106': '0.810', 
-            'QIAN880107': '0.814', 'SUEM840101': '0.883'}, "Correlation Coefficients from AAi1 record do not match the expected value.")
-        self.assertEqual(record['values'], expected_index_code2_vals, "Values for individual amino acids do not match expected.")
+            'QIAN880107': '0.814', 'SUEM840101': '0.883'}, 
+            "Correlation Coefficients from AAi1 record do not match the expected value, got {}.".format(record['correlation_coefficients']))
+        self.assertEqual(record['values'], expected_index_code2_vals, 
+            "Values for individual amino acids do not match expected, got\n{}.".format(record['values']))
         for aa, val in list(record['values'].items()):
             if (aa == '-'):
                 continue 
@@ -204,21 +197,28 @@ class AAIndex1_Tests(unittest.TestCase):
         self.assertIn('category', list(record.keys()), "category key not found in aaindex record object.")
         self.assertIn('pmid', list(record.keys()), "pmid key not found in aaindex record object.")
         self.assertIn('correlation_coefficients', list(record.keys()), "correlation_coefficients key not found in aaindex record object.")
-
+        
         self.assertEqual(record['description'], 'Normalized frequency of alpha-helix (Nagano, 1973)',
-            "Description from AAi1 record does not match the expected value.")
-        self.assertEqual(record['notes'], '', "Notes from AAi1 record does not match the expected value.")
-        self.assertTrue(record['references'].startswith("Nagano, K."), "References from AAi1 record do not match the expected value.")
-        self.assertEqual(record['category'], 'sec_struct', "Category from AAi1 record does not match the expected value.")
-        self.assertEqual(record['pmid'], '4728695', "PMID from AAi1 record does not match the expected value.")
+            "Description from AAi1 record does not match the expected value, got {}.".format(record['description']))
+        self.assertEqual(record['notes'], '', 
+            "Notes from AAi1 record does not match the expected value, got {}.".format(record['notes']))
+        self.assertEqual(record['references'], "Nagano, K. 'Local analysis of the mechanism of protein folding. "
+                        "I. Prediction of helices, loops, and beta-structures from primary structure' J. Mol. Biol. 75, 401-420 (1973)",
+            "Reference from AAi1 record do not match the expected value, got {}.".format(record['references']))
+        self.assertEqual(record['category'], 'sec_struct',
+            "Category from AAi1 record does not match the expected value, got {}.".format(record['category']))
+        self.assertEqual(record['pmid'], '4728695', 
+            "PMID from AAi1 record does not match the expected value, got {}.".format(record['pmid']))
         self.assertEqual(record['correlation_coefficients'], 
             {'BURA740101': '0.883', 'CHOP780201': '0.886', 'CRAJ730101': '0.925', 
             'GEIM800101': '0.912', 'GEIM800104': '0.828', 'ISOY800101': '0.862', 
             'KANM800101': '0.883', 'LEVM780101': '0.894', 'LEVM780104': '0.918', 
             'MAXF760101': '0.877', 'NAGK730103': '-0.870', 'PALJ810101': '0.953', 
             'PALJ810102': '0.876', 'PRAM900102': '0.894', 'RACS820108': '0.820', 
-            'ROBB760101': '0.910', 'TANS770101': '0.925'}, "Correlation Coefficients from AAi1 record do not match the expected value.")
-        self.assertEqual(record['values'], expected_index_code3_vals, "Values for individual amino acids do not match expected.")
+            'ROBB760101': '0.910', 'TANS770101': '0.925'}, 
+            "Correlation Coefficients from AAi1 record do not match the expected value, got {}.".format(record['correlation_coefficients']))
+        self.assertEqual(record['values'], expected_index_code3_vals, 
+            "Values for individual amino acids do not match expected, got\n{}.".format(record['values']))
         for aa, val in list(record['values'].items()):
             if (aa == '-'):
                 continue 
@@ -236,16 +236,24 @@ class AAIndex1_Tests(unittest.TestCase):
         self.assertIn('correlation_coefficients', list(record.keys()), "correlation_coefficients key not found in aaindex record object.")
 
         self.assertEqual(record['description'], 'Normalized frequency of extended structure (Tanaka-Scheraga, 1977)',
-            "Description from AAi1 record does not match the expected value.")
-        self.assertEqual(record['notes'], '', "Notes from AAi1 record does not match the expected value.")
-        self.assertTrue(record['references'].startswith("Tanaka, S. and Scheraga, H.A."), "References from AAi1 record do not match the expected value.")
-        self.assertEqual(record['category'], 'sec_struct', "Category from AAi1 record does not match the expected value.")
-        self.assertEqual(record['pmid'], '557155', "PMID from AAi1 record does not match the expected value.")
+            "Description from AAi1 record does not match the expected value, got {}.".format(record['description']))
+        self.assertEqual(record['notes'], '', 
+            "Notes from AAi1 record does not match the expected value, got {}.".format(record['notes']))
+        self.assertEqual(record['references'], "Tanaka, S. and Scheraga, H.A. 'Statistical mechanical treatment of protein"
+                        " conformation. 5. A multiphasic model for specific-sequence copolymers of amino acids' Macromolecules"
+                        " 10, 9-20 (1977) Recalculated by Kidera as normalized frequencies", 
+            "Reference from AAi1 record do not match the expected value, got {}.".format(record['references']))
+        self.assertEqual(record['category'], 'sec_struct', 
+            "Category from AAi1 record does not match the expected value, got {}.".format(record['category']))
+        self.assertEqual(record['pmid'], '557155', 
+            "PMID from AAi1 record does not match the expected value, got {}.".format(record['pmid']))
         self.assertEqual(record['correlation_coefficients'], 
             {'GEIM800105': '0.850', 'ISOY800102': '0.929', 'MAXF760102': '0.891', 
             'PALJ810103': '0.824', 'RACS820111': '0.841', 'ROBB760105': '0.871', 
-            'WOEC730101': '-0.806'}, "Correlation Coefficients from AAi1 record does not match the expected value.")
-        self.assertEqual(record['values'], expected_index_code4_vals, "Values for individual amino acids do not match expected.")
+            'WOEC730101': '-0.806'}, 
+            "Correlation Coefficients from AAi1 record do not match the expected value, got {}.".format(record['correlation_coefficients']))
+        self.assertEqual(record['values'], expected_index_code4_vals,
+            "Values for individual amino acids do not match expected, got\n{}.".format(record['values']))
         for aa, val in list(record['values'].items()):
             if (aa == '-'):
                 continue 
@@ -254,21 +262,17 @@ class AAIndex1_Tests(unittest.TestCase):
 #5.)
         #testing value error raised when erroneous indices sought from object
         with self.assertRaises(ValueError):
-            feature_vals = aaindex1[index_code5]
-
-        with self.assertRaises(ValueError):
-            feature_vals = aaindex1[index_code6]
-
-        with self.assertRaises(ValueError):
-            feature_vals = aaindex1[index_code7]
+            record = aaindex1[index_code5]
+            record = aaindex1[index_code6]
+            record = aaindex1[index_code7]
+            record = aaindex1[index_code8]
 
     def test_records_dot_notation(self):
             """ Test Case to check that the correct record data and amino acid values 
-            are returned for the accessiom number/index codes using the 
-            __getitem__ function, accessing the elements using the dot notation created
-            from the Map class. """
-#1.)
-            #initialise test feature codes and their correct amino acid values
+            are returned for the accessiom number/index codes using the __getitem__ 
+            function, accessing the elements using the dot notation created from the 
+            Map class. """
+            #initialise test record codes and their correct and expected amino acid values
             index_code1 = 'KARP850103'
             expected_index_code1_vals = {'-': 0, 'A': 0.892, 'C': 0.925, 'D': 0.932, 
                 'E': 0.933, 'F': 0.914, 'G': 0.923, 'H': 0.894, 'I': 0.872, 'K': 1.057, 
@@ -297,144 +301,84 @@ class AAIndex1_Tests(unittest.TestCase):
             index_code6 = "123456"
             index_code7 = "blahblahblah"
             index_code8 = ""
-#2.)
-            #get amino acid values for inputted feature/index codes
+#1.)
+            #get amino acid values for inputted record/index codes
             record = aaindex1[index_code1]
 
-            self.assertIn('description', list(record.keys()), 
-                "description key not found in aaindex record object.")
-            self.assertIn('references', list(record.keys()), 
-                "reference key not found in aaindex record object.")
-            self.assertIn('notes', list(record.keys()), 
-                "notes key not found in aaindex record object.")
-            self.assertIn('values', list(record.keys()), 
-                "values key not found in aaindex record object.")
-            self.assertIn('category', list(record.keys()), 
-                "category key not found in aaindex record object.")
-            self.assertIn('pmid', list(record.keys()), 
-                "pmid key not found in aaindex record object.")
-            self.assertIn('correlation_coefficients', list(record.keys()), 
-                "correlation_coefficients key not found in aaindex record object.")
-
             self.assertEqual(record.description, "Flexibility parameter for two rigid neighbors (Karplus-Schulz, 1985)",
-                "Description from AAi1 record do not match the expected value.")
+                "Description from AAi1 record does not match the expected value, got {}.".format(record['description']))
             self.assertEqual(record.notes, '',
-                "Notes from AAi1 record do not match the expected value.")
-            self.assertTrue(record.references.startswith("Karplus, P.A. and Schulz, G.E"),
-                "Reference from AAi1 record do not match the expected value.")
+                "Notes from AAi1 record does not match the expected value, got {}.".format(record['notes']))
+            self.assertEqual(record.references, "Karplus, P.A. and Schulz, G.E. 'Prediction of chain flexibility in proteins' Naturwiss. 72, 212-213 (1985)",
+                "Reference from AAi1 record do not match the expected value, got {}.".format(record['references']))
             self.assertEqual(record.category, 'flexibility', 
-                "Category from AAi1 record do not match the expected value.")
+                "Category from AAi1 record does not match the expected value, got {}.".format(record['category']))
             self.assertEqual(record.pmid, '', 
-                "PMID from AAi1 record do not match the expected value.")
+                "PMID from AAi1 record does not match the expected value, got {}.".format(record['pmid']))
             self.assertEqual(record.correlation_coefficients, {}, 
-                "Correlation Coefficients from AAi1 record do not match the expected value.")
+                "Correlation Coefficients from AAi1 record do not match the expected value, got {}.".format(record['correlation_coefficients']))
             self.assertEqual(record.values, expected_index_code1_vals, 
-                "Values for individual amino acids do not match expected.")
-#3.)
+                "Values for individual amino acids do not match expected, got\n{}.".format(record['values']))
+#2.)
             record = aaindex1[index_code2]
 
-            self.assertIn('description', list(record.keys()), 
-                "description key not found in aaindex record object.")
-            self.assertIn('references', list(record.keys()), 
-                "reference key not found in aaindex record object.")
-            self.assertIn('notes', list(record.keys()), 
-                "notes key not found in aaindex record object.")
-            self.assertIn('values', list(record.keys()), 
-                "values key not found in aaindex record object.")
-            self.assertIn('category', list(record.keys()), 
-                "category key not found in aaindex record object.")
-            self.assertIn('pmid', list(record.keys()), 
-                "pmid key not found in aaindex record object.")
-            self.assertIn('correlation_coefficients', list(record.keys()), 
-                "correlation_coefficients key not found in aaindex record object.")
-
             self.assertEqual(record.description, 'Normalized frequency of alpha-helix in alpha/beta class (Palau et al., 1981)',
-                "Description from AAi1 record do not match the expected value.")
+                "Description from AAi1 record does not match the expected value, got {}.".format(record['description']))
             self.assertEqual(record.notes, '', 
-                "Notes from AAi1 record do not match the expected value.")
+                "Notes from AAi1 record does not match the expected value, got {}.".format(record['notes']))
             self.assertTrue(record.references.startswith("Palau, J., Argos, P. and Puigdomenech"), 
-                "Reference from AAi1 record do not match the expected value.")
+                "Reference from AAi1 record do not match the expected value, got {}.".format(record['references']))
             self.assertEqual(record.category, 'sec_struct', 
-                "Category from AAi1 record do not match the expected value.")
+                "Category from AAi1 record does not match the expected value, got {}.".format(record['category']))
             self.assertEqual(record.pmid, '7118409', 
-                "PMID from AAi1 record do not match the expected value.")
+                "PMID from AAi1 record does not match the expected value, got {}.".format(record['pmid']))
             self.assertEqual(record.correlation_coefficients, 
                 {'AURR980112': '0.817', 'CHOP780201': '0.814', 
                 'CRAJ730101': '0.811', 'GEIM800101': '0.816', 'GEIM800104': '0.937', 'ISOY800101': '0.874', 
                 'KANM800101': '0.849', 'LEVM780101': '0.898', 'LEVM780104': '0.819', 'MAXF760101': '0.876', 
                 'PALJ810102': '0.864', 'PRAM900102': '0.898', 'ROBB760101': '0.805'}, 
-                "Correlation Coefficients from AAi1 record do not match the expected value.")
+                "Correlation Coefficients from AAi1 record do not match the expected value, got {}.".format(record['correlation_coefficients']))
             self.assertEqual(record.values, expected_index_code2_vals, 
-                "Values for individual amino acids do not match expected.")
-#4.)
+                "Values for individual amino acids do not match expected, got\n{}.".format(record['values']))
+#3.)
             record = aaindex1[index_code3]
 
-            self.assertIn('description', list(record.keys()), 
-                "description key not found in aaindex record object.")
-            self.assertIn('references', list(record.keys()), 
-                "reference key not found in aaindex record object.")
-            self.assertIn('notes', list(record.keys()), 
-                "notes key not found in aaindex record object.")
-            self.assertIn('values', list(record.keys()), 
-                "values key not found in aaindex record object.")
-            self.assertIn('category', list(record.keys()), 
-                "category key not found in aaindex record object.")
-            self.assertIn('pmid', list(record.keys()), 
-                "pmid key not found in aaindex record object.")
-            self.assertIn('correlation_coefficients', list(record.keys()), 
-                "correlation_coefficients key not found in aaindex record object.")
-
             self.assertEqual(record.description, 'Information measure for coil (Robson-Suzuki, 1976)',
-                "Description from AAi1 record do not match the expected value.")
+                "Description from AAi1 record does not match the expected value, got {}.".format(record['description']))
             self.assertEqual(record.notes, '',
-                "Notes from AAi1 record do not match the expected value.")
+                "Notes from AAi1 record does not match the expected value, got {}.".format(record['notes']))
             self.assertTrue(record.references.startswith("Robson, B. and Suzuki, E"),
-                "Reference from AAi1 record do not match the expected value.")
+                "Reference from AAi1 record do not match the expected value, got {}.".format(record['references']))
             self.assertEqual(record.category, 'sec_struct', 
-                "Category from AAi1 record do not match the expected value.")
+                "Category from AAi1 record does not match the expected value, got {}.".format(record['category']))
             self.assertEqual(record.pmid, '1003471', 
-                "PMID from AAi1 record do not match the expected value.")
+                "PMID from AAi1 record does not match the expected value, got {}.".format(record['pmid']))
             self.assertEqual(record.correlation_coefficients, 
                 {'CHOP780211': '0.841', 'ISOY800103': '0.807', 'PALJ810115': '0.885', 
                 'QIAN880132': '0.800', 'QIAN880133': '0.814'}, 
-                "Correlation Coefficients from AAi1 record do not match the expected value.")
+                "Correlation Coefficients from AAi1 record do not match the expected value, got {}.".format(record['correlation_coefficients']))
             self.assertEqual(record.values, expected_index_code3_vals, 
-                "Values for individual amino acids do not match expected.")
-#5.)
+                "Values for individual amino acids do not match expected, got\n{}.".format(record['values']))
+#4.)
             record = aaindex1[index_code4]
 
-            self.assertIn('description', list(record.keys()), 
-                "description key not found in aaindex record object.")
-            self.assertIn('references', list(record.keys()), 
-                "reference key not found in aaindex record object.")
-            self.assertIn('notes', list(record.keys()), 
-                "notes key not found in aaindex record object.")
-            self.assertIn('values', list(record.keys()), 
-                "values key not found in aaindex record object.")
-            self.assertIn('category', list(record.keys()), 
-                "category key not found in aaindex record object.")
-            self.assertIn('pmid', list(record.keys()), 
-                "pmid key not found in aaindex record object.")
-            self.assertIn('correlation_coefficients', list(record.keys()), 
-                "correlation_coefficients key not found in aaindex record object.")
-
             self.assertEqual(record.description, 'Normalized frequency of extended structure (Tanaka-Scheraga, 1977)',
-                "Description from AAi1 record do not match the expected value.")
+                "Description from AAi1 record does not match the expected value, got {}.".format(record['description']))
             self.assertEqual(record.notes, '', 
-                "Notes from AAi1 record do not match the expected value.")
+                "Notes from AAi1 record does not match the expected value, got {}.".format(record['notes']))
             self.assertTrue(record.references.startswith("Tanaka, S. and Scheraga, H.A."),
-                "Reference from AAi1 record do not match the expected value.")
+                "Reference from AAi1 record do not match the expected value, got {}.".format(record['references']))
             self.assertEqual(record.category, 'sec_struct', 
-                "Category from AAi1 record do not match the expected value.")
+                "Category from AAi1 record does not match the expected value, got {}.".format(record['category']))
             self.assertEqual(record.pmid, '557155', 
-                "PMID from AAi1 record do not match the expected value.")
+                "PMID from AAi1 record does not match the expected value, got {}.".format(record['pmid']))
             self.assertEqual(record.correlation_coefficients, 
                 {'GEIM800105': '0.850', 'ISOY800102': '0.929', 'MAXF760102': '0.891', 'PALJ810103': '0.824', 
                 'RACS820111': '0.841', 'ROBB760105': '0.871', 'WOEC730101': '-0.806'}, 
-                "Correlation Coefficients from AAi1 record do not match the expected value.")
+                "Correlation Coefficients from AAi1 record do not match the expected value, got {}.".format(record['correlation_coefficients']))
             self.assertEqual(record.values, expected_index_code4_vals, 
-                "Values for individual amino acids do not match expected.")
-#6.)
+                "Values for individual amino acids do not match expected, got\n{}.".format(record['values']))
+#5.)
             #testing value error raised when erroneous indices sought from object
             with self.assertRaises(ValueError):
                 aaindex1[index_code5]
@@ -444,7 +388,7 @@ class AAIndex1_Tests(unittest.TestCase):
 
     def test_search(self):
         """ Testing search functionality where 1 or more aaindex1 records will be returned 
-        if their description contains user-inputted keywords. """ 
+            if their description contains user-inputted keywords. """ 
         description1 = "Gibbs Energy"
         description2 = 'Polarity'
         description3 = 'Hydrophobic'
@@ -464,7 +408,7 @@ class AAIndex1_Tests(unittest.TestCase):
             self.assertIn(index, expected_description1_indices, 
                 "Index record {} expected to be found in search results.".format(index))
             self.assertTrue(description1.lower() in description1_search[index]['description'].lower(), 
-                "Expected description to be in record of returned search results: {}".format(description1_search[index]))
+                "Expected description to be in record of returned search results, got {}".format(description1_search[index]))
 #2.)
         description2_search = aaindex1.search(description2)
         expected_description2_indices = ['GRAR740102', 'RADA880108', 'ZIMJ680103']
@@ -475,7 +419,7 @@ class AAIndex1_Tests(unittest.TestCase):
             self.assertIn(index, expected_description2_indices,
                 "Index record {} expected to be found in search results.".format(index))
             self.assertTrue(description2.lower() in description2_search[index]['description'].lower(),
-                "Expected description to be in record of returned search results: {}.".format(description2_search[index]))
+                "Expected description to be in record of returned search results, got {}.".format(description2_search[index]))
 #3.)
         description3_search = aaindex1.search(description3)
         expected_description3_indices = ['ARGP820101', 'BLAS910101', 'CASG920101', 'CIDH920101', 'CIDH920102', 'CIDH920103', 
@@ -490,7 +434,7 @@ class AAIndex1_Tests(unittest.TestCase):
             self.assertIn(index, expected_description3_indices, 
                 "Index record {} expected to be found in search results.".format(index))
             self.assertTrue(description3.lower() in description3_search[index]['description'].lower(),
-                "Expected description to be in record of returned search results: {}.".format(description3_search[index]))
+                "Expected description to be in record of returned search results, got {}.".format(description3_search[index]))
 #4.)
         description4_search = aaindex1.search(description4)
         expected_description4_indices = ['FODM020101', 'BROC820101', 'BROC820102', 'GUOD860101', 'MEEJ800101', 'MEEJ800102', \
@@ -517,8 +461,8 @@ class AAIndex1_Tests(unittest.TestCase):
 
     def test_record_codes(self):
         """ Test Case to check that correct feature/record codes are in the parsed JSON
-        of all AAi1 records. Also testing that closely named erroneous records codes are
-        not present. """
+            of all AAi1 records. Also testing that closely named erroneous records codes 
+            are not present. """
         #testing actual index codes
         index_code1 = 'VHEG790101'
         index_code2 = 'PONP800107'
@@ -551,24 +495,26 @@ class AAIndex1_Tests(unittest.TestCase):
         record_name3 = record_names[368]
         record_name4 = record_names[560]
 #1.)
-        self.assertEqual(len(record_names), aaindex1.num_records(), 'Total number of names in the AAi1 database should equal the number of records.')
+        self.assertEqual(len(record_names), aaindex1.num_records(), 
+            'Total number of names in the AAi1 database should equal the number of records, got {}.'.format(len(record_names)))
 #2.)
-        self.assertEqual(record_name1, 'alpha-NH chemical shifts (Bundi-Wuthrich, 1979)', 'Incorrect record name returned, got {} instead of {}.'.
-                    format(record_name1, 'alpha-NH chemical shifts (Bundi-Wuthrich, 1979).'))
+        self.assertEqual(record_name1, 'alpha-NH chemical shifts (Bundi-Wuthrich, 1979)', 
+            'Incorrect record name returned, expected {} got {}.'.format('alpha-NH chemical shifts (Bundi-Wuthrich, 1979).', record_name1))
 #3.)
-        self.assertTrue(record_name2.startswith('Number of full nonbonding'), 'Incorrect record name returned, got {} instead of {}.'.
-                    format(record_name2, 'Number of full nonbonding'))
+        self.assertTrue(record_name2.startswith('Number of full nonbonding'), 
+            'Incorrect record name returned, expected {} got {}.'.format('Number of full nonbonding', record_name2))
 #4.)
-        self.assertIn('alpha-helix in alpha/beta class', record_name3, 'Expected string {} to be found in record name: {}.'.
-                    format('alpha-helix in alpha/beta class', record_name3))
+        self.assertIn('alpha-helix in alpha/beta class', record_name3, 
+            'Expected string {} to be found in record name: {}.'.format('alpha-helix in alpha/beta class', record_name3))
 #5.)
-        self.assertTrue(record_name4.endswith('Buriability (Zhou-Zhou, 2004)'), 'Expected record name to end with {}, got {}.'.
-                    format('Buriability (Zhou-Zhou, 2004)', record_name4))
+        self.assertEqual(record_name4, 'Buriability (Zhou-Zhou, 2004)', 
+            'Expected record name to be {}, got {}.'.format('Buriability (Zhou-Zhou, 2004)', record_name4))
 
     def test_last_updated(self):
-        """ Testing the last updated class attribute which is the latest version of the database. """
+        """ Testing the last updated class attribute which is the latest version of the database, 
+            according to https://www.genome.jp/aaindex/. """
         self.assertEqual(aaindex1.last_updated, "February 13, 2017", 
-                         "Last updated value does not match expected, got {}.".format(aaindex1.last_updated))
+            "Last updated value does not match expected, got {}.".format(aaindex1.last_updated))
 
     def tearDown(self):
         """ Remove any test data or directories. """

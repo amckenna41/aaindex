@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+#virtual env for testing
+aaindex_venv/
+
 # Distribution / packaging
 .Python
 build/

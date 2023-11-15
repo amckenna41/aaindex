@@ -56,6 +56,7 @@ This `aaindex` Python software package is a very lightweight way of accessing th
   * //                                                                   *
   ************************************************************************
 ``` -->
+
 Installation
 -----------------
 Install the latest version of `aaindex` using pip:
@@ -64,15 +65,16 @@ Install the latest version of `aaindex` using pip:
 pip3 install aaindex --upgrade
 ```
 
-Install by cloning repository:
+Install by cloning the repository:
 
 ```bash
 git clone https://github.com/amckenna41/aaindex.git
 python3 setup.py install
 ```
+
 Usage
 -----
-The AAindex module is made up of three modules for each AAindex database, with each having a Python class of the same name, when importing the package you should import the required database module:
+The `aaindex` package is made up of three modules for each AAindex database, with each having a Python class of the same name, when importing the package you should import the required database module:
 
 ```python
 from aaindex import aaindex1
@@ -83,13 +85,15 @@ from aaindex import aaindex1
 ## AAIndex1 Usage
 
 ### Get record from AAindex1
-The AAindex1 class offers diverse functionalities for obtaining any element from any record in the database. The records are imported from a parsed json in the data folder of the package. You can search for a particular record by its record code/accession number or its name/description. You can also get the record category, references, notes, correlation coefficients, pmid and importantly its associated amino acid values:
+The AAindex1 class offers diverse functionalities for obtaining any element from any record in the database. The records are imported from a parsed json in the data folder of the package. You can search for a particular record by its record code/accession number or its name/description. You can also get the record category, references, notes, correlation coefficients, PMID and importantly its associated amino acid values:
 ```python
 from aaindex import aaindex1
 
 full_record = aaindex1['CHOP780206']   #get full AAI record
 ''' full_record ->
-{'category': 'sec_struct', 'correlation_coefficients': {}, 'description': 'Normalized frequency of N-terminal non helical region (Chou-Fasman, 1978b)', 'notes': '', 'pmid': '364941', 'references': "Chou, P.Y. and Fasman, G.D. 'Prediction of the secondary structure of proteins from their amino acid sequence' Adv. Enzymol. 47, 45-148 (1978)", 'values': {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, 'E': 1.04, 'F': 0.93, 'G': 1.41, 'H': 1.22, 'I': 0.78, 'K': 1.01, 'L': 0.85, 'M': 0.83, 'N': 1.42, 'P': 1.1, 'Q': 0.75, 'R': 0.34, 'S': 1.55, 'T': 1.09, 'V': 0.75, 'W': 0.62, 'Y': 0.99}}
+{'category': 'sec_struct', 'correlation_coefficients': {}, 
+'description': 'Normalized frequency of N-terminal non helical region (Chou-Fasman, 1978b)', 'notes': '', 'pmid': '364941', 
+'references': "Chou, P.Y. and Fasman, G.D. 'Prediction of the secondary structure of proteins from their amino acid sequence' Adv. Enzymol. 47, 45-148 (1978)", 'values': {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, 'E': 1.04, 'F': 0.93, 'G': 1.41, 'H': 1.22, 'I': 0.78, 'K': 1.01, 'L': 0.85, 'M': 0.83, 'N': 1.42, 'P': 1.1, 'Q': 0.75, 'R': 0.34, 'S': 1.55, 'T': 1.09, 'V': 0.75, 'W': 0.62, 'Y': 0.99}}
 '''
 
 #get individual elements of AAindex record
@@ -124,13 +128,16 @@ record_category = aaindex1['CHOP780206'].category
 
 ### Get total number of AAindex1 records
 ```python
-#get total number of records in AAI database
 aaindex1.num_records()
+```
+
+### Get list of all AAindex1 record codes
+```python
+aaindex1.record_codes()
 ```
 
 ### Get list of all AAindex1 record names
 ```python
-#get list of all AAindex1 record names
 aaindex1.record_names()
 ```
 
@@ -146,6 +153,7 @@ from aaindex import aaindex2
 # from aaindex import aaindex2
 from aaindex import aaindex3
 ```
+
 Directories 📁
 --------------
 * `/tests` - unit and integration tests for `aaindex` package.
@@ -160,8 +168,8 @@ To run all tests, from the main `aaindex` folder run:
 python3 -m unittest discover tests
 ```
 
-Contact
--------
+Contact ✉️
+---------
 If you have any questions or comments, please contact amckenna41@qub.ac.uk or raise an issue on the [Issues][Issues] tab.
 
 License

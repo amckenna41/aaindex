@@ -4,10 +4,9 @@ from .aaindex1 import *
 
 #aaindex software metadata
 __name__ = "aaindex"
-__version__ = "1.1.1"
-__description__ = "A lightweight Python software package for accessing the data in the various AAIndex databases,\
-        which represent the physiochemical, biochemical and structural properties of amino acids as numerical indices."
-__author__ = 'AJ McKenna, https://github.com/amckenna41'
+__version__ = "1.1.2"
+__description__ = "A lightweight Python software package for accessing the data in the various AAIndex databases, which represent the physiochemical, biochemical and structural properties of amino acids as numerical indices."
+__author__ = 'AJ McKenna: https://github.com/amckenna41'
 __authorEmail__ = 'amckenna41@qub.ac.uk'
 __license__ = 'MIT'
 __url__ = 'https://github.com/amckenna41/aaindex'

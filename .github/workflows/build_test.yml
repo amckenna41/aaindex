@@ -33,10 +33,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     
-    #create artifacts dir
-    - name: Artifacts mkdir
-      run: mkdir artifacts
-
     # install all required modules and dependancies using pip and setup.py installation
     - name: Install dependencies
       run: |
@@ -48,6 +44,10 @@ jobs:
         pip3 install bandit
         pip3 install safety
         python3 setup.py install    
+
+    #create artifacts dir
+    - name: Artifacts mkdir
+      run: mkdir artifacts
 
     #package vulnerability check
     - name: Package safety check
@@ -71,10 +71,6 @@ jobs:
         echo "Testing using unittest..."
         python3 -m unittest discover tests
         
-    #generate coverage report, output to file 
-    - name: Generate Report
-      run: pytest --cov=aaindex tests/ > artifacts/coverage.txt
-
     #upload to Code Coverage, only if matrix python version is 3.9
     - name: Upload Coverage Report to Codecov
       if: ${{ matrix.python-version == '3.9' }}

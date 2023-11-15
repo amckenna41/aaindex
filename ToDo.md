@@ -8,15 +8,13 @@
 - [X] Ensure all files listed in readme of /data
 - [X] Go through flake8 and bandit output.
 - [X] Search by keyword, other ways to search?
-- [ ] Split individual aaindex properties into individual python @property decorator, using a Record class.
 - [ ] Use aaindex API URLs search_url = 'https://www.genome.jp/dbget-bin/www_bfind_sub?locale=en&serv=gn&keywords=charge&page=1&max_hit=0&dbkey=aaindex' , record_url = 'https://www.genome.jp/dbget-bin/www_bget?aaindex:KLEP840101'
 - [X] Parse main URL to check last updated: "Last updated: February 13, 2017"
 - [ ] Pull request to biopython for aaindex.
 - [X] Add "python3 -m twine upload --repository testpypi dist/*" to test pypi workflow.
 - [X] Add Keywords to setup.py & cfg
-- [ ] Add demo using jupyter notebook.
+- [X] Add demo using jupyter notebook.
 - [X] Update build/test workflow, similar to pySAR.
-- [ ] read the docs.
 - [ ] Add readthedocs badge - [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](http://ansicolortags.readthedocs.io/?badge=latest)
 - [ ] Add emojis to readme - test if they show up on Mac and Windows.
 - [ ] Check variable naming conventions.
@@ -40,7 +38,7 @@
 - [X] Think about removing download_using and download function all together.
 - [X] Add and fix codecov and coverage installs from github workflow.
 - [X] Update workflows.
-- [ ] Can aaindex1 object accept lowercase version of index - add unit tests of lowercase indices.
+- [X] Can aaindex1 object accept lowercase version of index - add unit tests of lowercase indices.
 - [X] Remove delayed==0.11.0b1 from requirments.txt.
 - [X] Update setup.cfg.
 - [X] Change all comment underlining from "------" to "=======".
@@ -48,4 +46,6 @@
 - [X] Mention its lightweight and requires no external python libraries to use.
 - [X] Change all refs of AAIndex to AAindex.
 - [X] Go over all modules etc.
-- [ ] Go over main readme.
+- [X] Go over main readme.
+- [X] Read over code.
+- [X] Read over tests.
