@@ -28,7 +28,7 @@ make html
 
 Open the index.html file generated in the docs/_build/html folder
 ```bash
-open _build/html/index.html
+open build/html/index.html
 ```
 
 The full tutorial for using the readthedocs platform is available [here](https://docs.readthedocs.io/en/stable/tutorial/index.html).

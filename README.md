@@ -1,13 +1,13 @@
 ## Python package for working with the AAindex database (https://www.genome.jp/aaindex/) <a name="TOP"></a>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_logo.png" />
+  <img src="https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_logo.png" height="400" />
 </p>
 
 [![AAindex](https://img.shields.io/pypi/v/aaindex)](https://pypi.org/project/aaindex/)
 [![pytest](https://github.com/amckenna41/aaindex/workflows/Building%20and%20Testing/badge.svg)](https://github.com/amckenna41/aaindex/actions?query=workflowBuilding%20and%20Testing)
 [![PythonV](https://img.shields.io/pypi/pyversions/aaindex?logo=2)](https://pypi.org/project/aaindex/)
 [![Platforms](https://img.shields.io/badge/platforms-linux%2C%20macOS%2C%20Windows-green)](https://pypi.org/project/aaindex/)
-<!-- [![Documentation Status](https://readthedocs.org/projects/aaindex/badge/?version=latest)](https://aaindex.readthedocs.io/en/latest/?badge=latest) -->
+[![Documentation Status](https://readthedocs.org/projects/aaindex/badge/?version=latest)](https://aaindex.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 [![Issues](https://img.shields.io/github/issues/amckenna41/aaindex)](https://github.com/amckenna41/aaindex/issues)
 <!-- [![Size](https://img.shields.io/github/repo-size/amckenna41/aaindex)](https://github.com/amckenna41/aaindex) -->
