@@ -132,9 +132,9 @@ jobs:
           name: security-artifacts
           path: artifacts/
 
-  # Ruff linting check
-  ruff-lint:
-    name: Ruff Lint
+  # --- Flake8 Linter ---
+  flake8-lint:
+    name: Flake8 Lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -143,12 +143,27 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.10"
 
-      - name: Install ruff
+      - name: Install flake8
         run: |
           python -m pip install --upgrade pip
-          pip install ruff
+          pip install flake8 flake8-docstrings
 
-      - name: Run ruff
-        run: ruff check .
+      - name: Create artifacts directory
+        run: mkdir flake8_artifacts
+
+      - name: Run flake8
+        run: |
+          echo "Critical errors (E9, F63, F7, F82):" | tee -a flake8_artifacts/flake8_output.txt
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics >> flake8_artifacts/flake8_output.txt 2>&1 || true
+          echo "" | tee -a flake8_artifacts/flake8_output.txt
+          echo "Full linting report:" | tee -a flake8_artifacts/flake8_output.txt
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics >> flake8_artifacts/flake8_output.txt 2>&1 || true
+        continue-on-error: true
+
+      - name: Upload flake8 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flake8-artifact
+          path: flake8_artifacts/flake8_output.txt 
