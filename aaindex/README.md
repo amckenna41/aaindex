@@ -1,9 +1,6 @@
 # aaindex
 
-[![AAindex](https://img.shields.io/pypi/v/aaindex)](https://pypi.org/project/aaindex/)
-[![PythonV](https://img.shields.io/pypi/pyversions/aaindex?logo=2)](https://pypi.org/project/aaindex/)
-[![Platforms](https://img.shields.io/badge/platforms-linux%2C%20macOS%2C%20Windows-green)](https://pypi.org/project/aaindex/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
+Source code for the `aaindex` package. See the [project README](../README.md) for usage and installation instructions.
 
 Usage
 -----
@@ -46,8 +43,8 @@ record_notes = aaindex1['CHOP780206']['notes']
 record_notes = aaindex1['CHOP780206'].notes
 #""
 
-record_correlation_coefficient = aaindex1['CHOP780206']['correlation_coefficient']
-record_correlation_coefficient = aaindex1['CHOP780206'].correlation_coefficient
+record_correlation_coefficients = aaindex1['CHOP780206']['correlation_coefficients']
+record_correlation_coefficients = aaindex1['CHOP780206'].correlation_coefficients
 #{}
 
 record_pmid = aaindex1['CHOP780206']['pmid']  

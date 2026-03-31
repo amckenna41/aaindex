@@ -1,1 +1,2 @@
-graft aaindex/data*
+graft aaindex/data
+include aaindex/py.typed

@@ -1,132 +1,154 @@
 name: Building and Testing
 
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ main ]
-    paths-ignore: 
-      - '**/README.md'
-      - '**/.ipynb'
+    branches: [ master, main ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.ipynb'
       - 'docs/**/*'
+      - 'config/**'
       - LICENSE
       - .gitignore
   pull_request:
-    branches: [ main ]
-
-  # allow for workflow to be manually initiated from the Actions tab
+    branches: [ master, main ]
   workflow_dispatch:
 
-#build and test aaindex
 jobs:
-  # test job, waits for build job to complete
+  # Full test suite with coverage
   test:
-    timeout-minutes: 15
-    name: Setup environment
-    runs-on: ubuntu-latest        
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10"]   #testing on multiple python versions
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    
-    # install all required modules and dependancies using pip and setup.py installation
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python3 -m pip install setuptools wheel twine
-        pip install flake8 pytest
-        pip3 install pytest
-        pip3 install pytest-cov
-        pip3 install bandit
-        pip3 install safety
-        python3 setup.py install    
-
-    #create artifacts dir
-    - name: Artifacts mkdir
-      run: mkdir artifacts
-
-    #package vulnerability check
-    - name: Package safety check
-      run: |
-        echo "Running package safety check"
-        python3 -m safety check > artifacts/package_safety_output.txt
-        cat artifacts/package_safety_output.txt
-      continue-on-error: true
-
-    #run Bandit security check for any known vulnerabilities in code
-    - name: Bandit
-      run: |
-        echo "Running Bandit"
-        python3 -m bandit -r iso3166-updates > artifacts/bandit_output.txt
-        cat artifacts/bandit_output.txt
-      continue-on-error: true
-
-    #unit tests using unittest
-    - name: Testing with unittest
-      run: |
-        echo "Testing using unittest..."
-        python3 -m unittest discover tests
-        
-    #upload to Code Coverage, only if matrix python version is 3.9
-    - name: Upload Coverage Report to Codecov
-      if: ${{ matrix.python-version == '3.9' }}
-      uses: codecov/codecov-action@v3
-      env: 
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      with:
-        flags: aaindex_workflow
-    
-    #upload test artifacts to workflow
-    - name: Upload Test Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: test_artifacts
-        path: |
-          artifacts/package_safety_output.txt
-          artifacts/bandit_output.txt
-          artifacts/coverage.txt
-        if-no-files-found: error 
-
-  #linter check on repo
-  linter:
+    name: Tests
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]   #testing on multiple python versions
-
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      #checkout repo
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      # install all required modules and dependancies using pip installation
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Cache pip dependencies
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+
+      # Install package and test dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pytest
-      
-      #create temp artifacts repo
-      - name: Artifacts mkdir
-        run: mkdir flake8_artifacts
+          python -m pip install setuptools wheel
+          pip install -e .
+          pip install pytest pytest-cov codecov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      #linting with flake8
-      - name: Lint with flake8
+      # Run tests with coverage report
+      - name: Run full test suite with coverage
         run: |
-          echo "Testing using flake8..."
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics > flake8_artifacts/flake8_output.txt
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics >> flake8_artifacts/flake8_output.txt
-        continue-on-error: true
-      
-      #upload artifacts to repo
-      - name: Upload flake8 Artifact
-        uses: actions/upload-artifact@v3
+          python -m pytest -v --cov=aaindex --cov-report=xml --cov-report=html
+
+      # Upload coverage XML as artifact
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: flake8_artifact
-          path: flake8_artifacts/flake8_output.txt
-          if-no-files-found: error 
+          name: coverage-xml-${{ matrix.python-version }}
+          path: coverage.xml
+
+      # Upload coverage to Codecov for Python 3.10 only
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: ${{ matrix.python-version == '3.12' }}
+        with:
+          flags: aaindex_coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # Security scanning with pip-audit, safety, and bandit
+  security-scan:
+    name: Security Scan
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Install security scanning tools
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit bandit safety
+
+      - name: Create artifacts folder
+        run: mkdir artifacts
+
+      # Audit installed packages for known vulnerabilities
+      - name: Run pip-audit
+        run: |
+          pip-audit > artifacts/pip_audit_output.txt 2>&1 || true
+          cat artifacts/pip_audit_output.txt
+        continue-on-error: true
+
+      # Check dependencies against safety vulnerability database
+      - name: Run safety check
+        run: |
+          safety check > artifacts/safety_output.txt 2>&1 || true
+          cat artifacts/safety_output.txt
+        continue-on-error: true
+
+      # Static analysis for common security issues
+      - name: Run Bandit
+        run: |
+          bandit -r aaindex tests -f json > artifacts/bandit_output.json 2>&1 || true
+          bandit -r aaindex tests > artifacts/bandit_output.txt 2>&1 || true
+          cat artifacts/bandit_output.txt
+        continue-on-error: true
+
+      # Upload all security scan artifacts
+      - name: Upload security artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-artifacts
+          path: artifacts/
+
+  # Ruff linting check
+  ruff-lint:
+    name: Ruff Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Run ruff
+        run: ruff check .

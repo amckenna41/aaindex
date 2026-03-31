@@ -4,6 +4,7 @@
 
 import os
 import unittest
+from unittest.mock import patch
 from importlib.metadata import metadata
 from aaindex import aaindex1, __version__
 
@@ -37,6 +38,12 @@ class AAIndex1_Tests(unittest.TestCase):
         testing to check that the correct names/description is returned for each index.
     test_last_updated:
         testing hard-coded date value that the AAindex database were last updated.
+    test_values:
+        testing the values() method returns the correct amino acid values dict for a given record.
+    test_get_record_by_category:
+        testing get_record_by_category() returns all records belonging to a given category.
+    test_dunder_methods:
+        testing __len__, __contains__, __iter__, and __repr__ dunder methods.
     """
     def setUp(self):
         """ Inititalise AAindex module variables and test data directory. """
@@ -49,27 +56,19 @@ class AAIndex1_Tests(unittest.TestCase):
 
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
-        self.assertEqual(__version__, "1.1.2",
+        self.assertEqual(__version__, "1.2.0",
             "aaindex version is not correct, got: {}.".format(metadata("aaindex")['version']))
         self.assertEqual(metadata("aaindex")['name'], "aaindex", 
             "aaindex software name is not correct, got: {}.".format(metadata("aaindex")['name']))
-        self.assertEqual(metadata("aaindex")['author'], "AJ McKenna: https://github.com/amckenna41", 
-            "aaindex author is not correct, got: {}.".format(metadata("aaindex")['author']))
-        self.assertEqual(metadata("aaindex")['author-email'], "amckenna41@qub.ac.uk", 
-            "aaindex author email is not correct, got: {}.".format(metadata("aaindex")['author-email']))
-        self.assertEqual(metadata('aaindex')['home-page'], "https://github.com/amckenna41/aaindex", 
-            "aaindex home page url is not correct, got: {}.".format(metadata('aaindex')['home-page']))
+        self.assertEqual(metadata("aaindex")['author-email'], "AJ McKenna <amckenna41@qub.ac.uk>", 
+            "aaindex author-email is not correct, got: {}.".format(metadata("aaindex")['author-email']))
         self.assertEqual(metadata('aaindex')['maintainer'], "AJ McKenna", 
             "aaindex maintainer is not correct, got: {}.".format(metadata('aaindex')['maintainer']))
-        self.assertEqual(metadata('aaindex')['license'], "MIT", 
-            "aaindex license type is not correct, got: {}.".format(metadata('aaindex')['license']))
-        # self.assertEqual(metadata('aaindex')['summary'], 
-        #     "A lightweight Python software package for accessing the data in the various AAIndex databases, "
-        #     "which represent the physiochemical, biochemical and structural properties of amino acids as numerical indices.", 
-        #             "aaindex package summary is not correct, got:\n{}.".format(metadata('aaindex')['summary']))
+        self.assertEqual(metadata('aaindex')['License-Expression'], "MIT", 
+            "aaindex license type is not correct, got: {}.".format(metadata('aaindex')['License-Expression']))
         self.assertEqual(metadata('aaindex')['keywords'], 
-            "amino acid index,aaindex,bioinformatics,protein engineering,python,pypi,physiochemical properties,"
-            "biochemical properties,proteins,protein structure prediction,pysar", 
+            "amino acid index,aaindex,bioinformatics,protein engineering,python,pypi,"
+            "physicochemical properties,biochemical properties,proteins,protein structure prediction,pysar", 
                 "aaindex keywords are not correct, got:\n{}.".format(metadata('aaindex')['keywords']))
 
     def test_amino_acids(self):
@@ -262,10 +261,13 @@ class AAIndex1_Tests(unittest.TestCase):
 #5.)
         #testing value error raised when erroneous indices sought from object
         with self.assertRaises(ValueError):
-            record = aaindex1[index_code5]
-            record = aaindex1[index_code6]
-            record = aaindex1[index_code7]
-            record = aaindex1[index_code8]
+            aaindex1[index_code5]
+        with self.assertRaises(ValueError):
+            aaindex1[index_code6]
+        with self.assertRaises(ValueError):
+            aaindex1[index_code7]
+        with self.assertRaises(ValueError):
+            aaindex1[index_code8]
 
     def test_records_dot_notation(self):
             """ Test Case to check that the correct record data and amino acid values 
@@ -382,8 +384,11 @@ class AAIndex1_Tests(unittest.TestCase):
             #testing value error raised when erroneous indices sought from object
             with self.assertRaises(ValueError):
                 aaindex1[index_code5]
+            with self.assertRaises(ValueError):
                 aaindex1[index_code6]
+            with self.assertRaises(ValueError):
                 aaindex1[index_code7]
+            with self.assertRaises(ValueError):
                 aaindex1[index_code8]
 
     def test_search(self):
@@ -515,6 +520,173 @@ class AAIndex1_Tests(unittest.TestCase):
             according to https://www.genome.jp/aaindex/. """
         self.assertEqual(aaindex1.last_updated, "February 13, 2017", 
             "Last updated value does not match expected, got {}.".format(aaindex1.last_updated))
+
+    def test_values(self):
+        """ Test Case to check that values() returns the correct amino acid values dict
+        for a given record code. """
+        index_code1 = 'AURR980103'
+        expected_vals = {'A': 1.05, 'L': 0.96, 'R': 0.81, 'K': 0.97, 'N': 0.91,
+            'M': 0.99, 'D': 1.39, 'F': 0.95, 'C': 0.6, 'P': 1.05, 'Q': 0.87,
+            'S': 0.96, 'E': 1.11, 'T': 1.03, 'G': 1.26, 'W': 1.06, 'H': 1.43,
+            'Y': 0.94, 'I': 0.95, 'V': 0.62, '-': 0}
+#1.)
+        vals = aaindex1.values(index_code1)
+        self.assertIsInstance(vals, dict,
+            'values() should return a dict, got {}.'.format(type(vals)))
+        self.assertEqual(vals, expected_vals,
+            'Values returned do not match expected, got {}.'.format(vals))
+#2.)
+        #verify values() matches direct record attribute access
+        self.assertEqual(vals, aaindex1[index_code1]['values'],
+            'values() result should match direct record[values] access.')
+#3.)
+        #invalid record code should raise ValueError
+        with self.assertRaises(ValueError):
+            aaindex1.values('ABCDEFGH')
+
+    def test_get_record_by_category(self):
+        """ Test Case for get_record_by_category(), which returns all records
+        belonging to a given category string. """
+#1.)
+        #sec_struct category should be non-empty and contain known record
+        sec_struct_records = aaindex1.get_record_by_category('sec_struct')
+        self.assertIsInstance(sec_struct_records, dict,
+            'get_record_by_category() should return a dict.')
+        self.assertGreater(len(sec_struct_records), 0,
+            'Expected non-empty results for sec_struct category.')
+        self.assertIn('AURR980103', sec_struct_records,
+            'Expected AURR980103 to be in sec_struct category.')
+        self.assertIn('FINA770101', sec_struct_records,
+            'Expected FINA770101 to be in sec_struct category.')
+#2.)
+        #flexibility category should be non-empty and contain known record
+        flexibility_records = aaindex1.get_record_by_category('flexibility')
+        self.assertGreater(len(flexibility_records), 0,
+            'Expected non-empty results for flexibility category.')
+        self.assertIn('KARP850103', flexibility_records,
+            'Expected KARP850103 to be in flexibility category.')
+#3.)
+        #category lookup is case-insensitive
+        self.assertEqual(
+            aaindex1.get_record_by_category('SEC_STRUCT'),
+            aaindex1.get_record_by_category('sec_struct'),
+            'get_record_by_category() should be case-insensitive.')
+#4.)
+        #non-existent category should return an empty dict
+        empty_records = aaindex1.get_record_by_category('nonexistent_category')
+        self.assertEqual(len(empty_records), 0,
+            'Expected empty dict for non-existent category, got {}.'.format(len(empty_records)))
+#5.)
+        #non-string input should raise TypeError
+        with self.assertRaises(TypeError):
+            aaindex1.get_record_by_category(123)
+
+    def test_dunder_methods(self):
+        """ Test Case for __len__, __contains__, __iter__, and __repr__ dunder methods. """
+#1.) __len__
+        self.assertEqual(len(aaindex1), 566,
+            'Expected __len__ to return 566, got {}.'.format(len(aaindex1)))
+#2.) __contains__
+        self.assertIn('AURR980103', aaindex1,
+            'Expected AURR980103 in aaindex1 via __contains__.')
+        self.assertNotIn('BLAH999999', aaindex1,
+            'Expected BLAH999999 to not be in aaindex1 via __contains__.')
+#3.) __iter__
+        codes_from_iter = list(aaindex1)
+        self.assertEqual(len(codes_from_iter), 566,
+            'Expected 566 codes from __iter__, got {}.'.format(len(codes_from_iter)))
+        self.assertIn('AURR980103', codes_from_iter,
+            'Expected AURR980103 in __iter__ output.')
+#4.) __repr__
+        self.assertEqual(repr(aaindex1), "AAIndex1(records=566, last_updated='February 13, 2017')",
+            'Unexpected __repr__ output: {}.'.format(repr(aaindex1)))
+
+    def test_edge_cases(self):
+        """ Test edge cases: invalid amino acid key, empty search, whitespace input. """
+#1.) accessing a non-existent field should raise AttributeError via Map's __getattr__
+        record = aaindex1['AURR980103']
+        with self.assertRaises(AttributeError):
+            _ = record.nonexistent_field
+#2.) values for a valid record should not contain key 'Z' (non-canonical AA)
+        vals = aaindex1.values('AURR980103')
+        self.assertNotIn('Z', vals,
+            'Non-canonical amino acid Z should not be in values dict.')
+#3.) empty string search should match all records (every description contains "")
+        empty_search = aaindex1.search("")
+        self.assertEqual(len(empty_search), aaindex1.num_records(),
+            'Empty string search should match all records.')
+#4.) non-string input for __getitem__ should raise TypeError
+        with self.assertRaises(TypeError):
+            aaindex1[12345]
+        with self.assertRaises(TypeError):
+            aaindex1[None]
+#5.) record code with leading/trailing whitespace should still resolve
+        record = aaindex1['  AURR980103  ']
+        self.assertEqual(record.description,
+            "Normalized positional residue frequency at helix termini N' (Aurora-Rose, 1998)",
+            'Whitespace-padded record code should resolve correctly.')
+
+    def test_plot(self):
+        """ Test that plot() calls matplotlib and does not error for a valid record. """
+        import matplotlib
+        matplotlib.use('Agg')
+        with patch('matplotlib.pyplot.show'):
+            aaindex1.plot('AURR980103')
+
+    def test_plot_invalid_record(self):
+        """ Test that plot() raises ValueError for an invalid record code. """
+        with self.assertRaises(ValueError):
+            aaindex1.plot('BLAH999999')
+
+    def test_repr_format(self):
+        """ Test that __repr__ returns the expected format string. """
+        r = repr(aaindex1)
+        self.assertTrue(r.startswith('AAIndex1('),
+            'Expected __repr__ to start with AAIndex1(, got {}.'.format(r))
+        self.assertIn('records=', r,
+            'Expected records= in __repr__ output.')
+        self.assertIn('last_updated=', r,
+            'Expected last_updated= in __repr__ output.')
+        self.assertTrue(r.endswith(')'),
+            'Expected __repr__ to end with ).')
+
+    def test_plot_import_error(self):
+        """ Test that plot() raises ImportError when matplotlib is unavailable. """
+        import sys
+        # Temporarily remove matplotlib from the module cache and mark it unavailable
+        saved = {k: sys.modules.pop(k) for k in list(sys.modules) if k.startswith('matplotlib')}
+        sys.modules['matplotlib'] = None  # type: ignore[assignment]
+        try:
+            with self.assertRaises(ImportError):
+                aaindex1.plot('AURR980103')
+        finally:
+            del sys.modules['matplotlib']
+            sys.modules.update(saved)
+
+    def test_parse_aaindex_io_error(self):
+        """ Test that parse_aaindex() raises IOError when the data file cannot be opened. """
+        with patch('builtins.open', side_effect=IOError('mocked io error')):
+            with self.assertRaises(IOError):
+                aaindex1.parse_aaindex()
+
+    def test_get_all_categories(self):
+        """ Test that get_all_categories() returns the expected structure. """
+        cats = aaindex1.get_all_categories()
+#1.) should return a non-empty dict
+        self.assertIsInstance(cats, dict,
+            'get_all_categories() should return a dict, got {}.'.format(type(cats)))
+        self.assertGreater(len(cats), 0,
+            'get_all_categories() should return a non-empty dict.')
+#2.) known record codes should map to known category strings
+        known_categories = {'sec_struct', 'hydrophobic', 'flexibility', 'charge',
+                            'alpha_helix', 'beta_sheet', 'residue_prop', 'other'}
+        self.assertIn('AURR980103', cats,
+            'Expected AURR980103 in categories dict.')
+        self.assertIn(cats['AURR980103'], known_categories,
+            'Category for AURR980103 should be a known category, got {}.'.format(cats['AURR980103']))
+#3.) number of category entries should equal number of records
+        self.assertEqual(len(cats), aaindex1.num_records(),
+            'Number of category entries should equal num_records(), got {}.'.format(len(cats)))
 
     def tearDown(self):
         """ Remove any test data or directories. """

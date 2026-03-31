@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aaindex"
+version = "1.2.0"
+description = "A lightweight Python software package for accessing the data in the various AAIndex databases, which represent the physicochemical, biochemical and structural properties of amino acids as numerical indices."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+authors = [
+    { name = "AJ McKenna", email = "amckenna41@qub.ac.uk" },
+]
+maintainers = [
+    { name = "AJ McKenna" },
+]
+keywords = [
+    "amino acid index",
+    "aaindex",
+    "bioinformatics",
+    "protein engineering",
+    "python",
+    "pypi",
+    "physicochemical properties",
+    "biochemical properties",
+    "proteins",
+    "protein structure prediction",
+    "pysar",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Information Technology",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+
+[project.urls]
+Homepage = "https://github.com/amckenna41/aaindex"
+Download = "https://github.com/amckenna41/aaindex/archive/refs/heads/main.zip"
+"Issue Tracker" = "https://github.com/amckenna41/aaindex/issues"
+Documentation = "https://aaindex.readthedocs.io/en/latest/"
+Changelog = "https://github.com/amckenna41/aaindex/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-timeout",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+plot = [
+    "matplotlib",
+]
+
+[tool.setuptools.packages.find]
+include = ["aaindex*"]
+
+[tool.setuptools.package-data]
+aaindex = ["data/*", "py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py38"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501"]

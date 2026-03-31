@@ -1,33 +1,9 @@
-- [X] Look into implementing AAindex2 & 3
 - [ ] Visualise function in class where you can do histogram/heat map etc of each amino acid and corresponding value.
-- [ ] Implement functionality to work with AAindex 2 and 3 (https://github.com/Pymol-Scripts/Pymol-script-repo/blob/master/aaindex.py , https://github.com/pycogent/pycogent/blob/master/cogent/parse/aaindex.py)
-- [X] Move aaindex into __init__ file, change imports in folders and readme's.
-- [X] Get rid of AAINDEX_FILENAME - make aaindex1 name static.
-- [X] Add references section to readme.
-- [X] Remove ds_store from all folders.
-- [X] Ensure all files listed in readme of /data
-- [X] Go through flake8 and bandit output.
-- [X] Search by keyword, other ways to search?
 - [ ] Use aaindex API URLs search_url = 'https://www.genome.jp/dbget-bin/www_bfind_sub?locale=en&serv=gn&keywords=charge&page=1&max_hit=0&dbkey=aaindex' , record_url = 'https://www.genome.jp/dbget-bin/www_bget?aaindex:KLEP840101'
-- [X] Parse main URL to check last updated: "Last updated: February 13, 2017"
 - [ ] Pull request to biopython for aaindex.
-- [X] Add "python3 -m twine upload --repository testpypi dist/*" to test pypi workflow.
-- [X] Add Keywords to setup.py & cfg
-- [X] Add demo using jupyter notebook.
-- [X] Update build/test workflow, similar to pySAR.
-- [ ] Add readthedocs badge - [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](http://ansicolortags.readthedocs.io/?badge=latest)
+- [ ] Add readthedocs badge.
 - [ ] Add emojis to readme - test if they show up on Mac and Windows.
-- [ ] Check variable naming conventions.
-- [ ] Change "secrets.PY_PI..." to "secrets.PYPI...".
-- [X] Add comments to .circle/workflow.
-- [X] Add spacing in between individual references, see if it improves readability, revert if not.
 - [ ] Add documentation section in readme.
-- [X] Add path-ignore keywords to GitHub Action.
-- [X] Reorder software metadata in setup.py to be in order of main func, create __description__ var.
-- [X] Add download_url to setup.py - url of zipped package.
-- [X] Add category to output object - aaindex1['CHOP780206']['category']
-- [X] Remove get_category_from_record function, just use aaindex1['XXXX']['category'] to get category.
-- [X] Test aaindex_json has correct list of keys.
 - [X] Test last updated - self.last_updated = "February 13, 2017" #as shown on homepage (https://www.genome.jp/aaindex/)
 - [X] Remove one-hot encoding from aaindex, and sci-kit learn library. 
 - [X] Below aaindex record image in readme - add description of each record key.
@@ -49,3 +25,9 @@
 - [X] Go over main readme.
 - [X] Read over code.
 - [X] Read over tests.
+- [X] Change physiochemical to physicochemical.
+- [ ] In /docs folder, add readme with process of how to build and upload the docs to the
+- [ ] https://github.com/tadorfer/AAIndex/blob/master/raw_to_df.ipynb
+- [ ] Parameter typing https://docs.python.org/3/library/typing.html
+- [ ] Update workflows
+- [ ] Double check spelling using code-spell-checker extension
