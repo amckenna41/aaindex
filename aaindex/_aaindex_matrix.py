@@ -23,7 +23,7 @@ class Map(dict):
     """
 
     def __init__(self, *args, **kwargs):
-        super(Map, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for arg in args:
             if isinstance(arg, dict):
                 for k, v in arg.items():
@@ -42,14 +42,14 @@ class Map(dict):
         self.__setitem__(key, value)
 
     def __setitem__(self, key, value):
-        super(Map, self).__setitem__(key, value)
+        super().__setitem__(key, value)
         self.__dict__.update({key: value})
 
     def __delattr__(self, item):
         self.__delitem__(item)
 
     def __delitem__(self, key):
-        super(Map, self).__delitem__(key)
+        super().__delitem__(key)
         del self.__dict__[key]
 
     def __repr__(self) -> str:
@@ -118,10 +118,10 @@ class _AAIndexMatrix:
             self.aaindex_module_path, self.data_dir, self.aaindex_filename
         )
         try:
-            with open(tmp_filepath, "r") as f:
+            with open(tmp_filepath) as f:
                 lines = f.readlines()
-        except IOError as e:
-            raise IOError(
+        except OSError as e:
+            raise OSError(
                 f"Error opening {self.aaindex_filename} file, "
                 f"check it is present at: {tmp_filepath}."
             ) from e
@@ -338,54 +338,6 @@ class _AAIndexMatrix:
             List of description strings in database insertion order.
         """
         return [v["description"] for v in self.aaindex_json.values()]
-
-    def plot(self, record_code: str) -> None:
-        """Display a heatmap of the 20x20 matrix for the given record.
-
-        Requires matplotlib to be installed. Amino acid pairs with NA values
-        are shown in light grey.
-
-        Args:
-            record_code: AAindex accession number.
-
-        Raises:
-            ImportError: If matplotlib is not installed.
-            ValueError: If record_code is not found in the database.
-        """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError as e:
-            raise ImportError(
-                "matplotlib is required for plot(). "
-                "Install it with: pip install matplotlib"
-            ) from e
-
-        record = self[record_code]
-        aa_order = record.row_order
-        matrix = record.matrix
-
-        #build a 2D grid in row_order sequence, replacing None with NaN
-        grid = [
-            [matrix.get(row_aa, {}).get(col_aa) for col_aa in aa_order]
-            for row_aa in aa_order
-        ]
-        grid_float = [
-            [v if v is not None else float("nan") for v in row]
-            for row in grid
-        ]
-
-        fig, ax = plt.subplots(figsize=(10, 8))
-        cmap = plt.cm.RdYlGn.copy()
-        cmap.set_bad(color="lightgrey")
-        im = ax.imshow(grid_float, cmap=cmap, aspect="auto")
-        plt.colorbar(im, ax=ax)
-        ax.set_xticks(range(len(aa_order)))
-        ax.set_yticks(range(len(aa_order)))
-        ax.set_xticklabels(aa_order)
-        ax.set_yticklabels(aa_order)
-        ax.set_title(f"{record_code}: {record.description}")
-        plt.tight_layout()
-        plt.show()
 
     def __getitem__(self, record_code: str) -> "Map":
         """Return a record by accession number wrapped in a Map (dot-notation dict).

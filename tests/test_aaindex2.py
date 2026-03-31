@@ -48,7 +48,7 @@ class AAIndex2_Tests(unittest.TestCase):
         To date, 94 records are present in the database. """
 #1.)
         self.assertEqual(aaindex2.num_records(), 94,
-            'Expected 94 records in AAi2, got {}.'.format(aaindex2.num_records()))
+            f'Expected 94 records in AAi2, got {aaindex2.num_records()}.')
 
     def test_records(self):
         """ Test Case to check that correct record data and substitution matrix are
@@ -73,15 +73,15 @@ class AAIndex2_Tests(unittest.TestCase):
         self.assertIn('col_order', list(record.keys()), 'col_order key not found in AAi2 record.')
 
         self.assertEqual(record['description'], 'The PAM-120 matrix (Altschul, 1991)',
-            'Unexpected description for ALTS910101, got {}.'.format(record['description']))
+            f"Unexpected description for ALTS910101, got {record['description']}.")
         self.assertEqual(record['pmid'], '1713145 2051488',
-            'Unexpected pmid for ALTS910101, got {}.'.format(record['pmid']))
+            f"Unexpected pmid for ALTS910101, got {record['pmid']}.")
         self.assertEqual(record['notes'], '',
-            'Unexpected notes for ALTS910101, got {}.'.format(record['notes']))
+            f"Unexpected notes for ALTS910101, got {record['notes']}.")
 
         #verify matrix is a nested dict keyed by amino acid
         self.assertIsInstance(record['matrix'], dict,
-            'matrix should be a dict, got {}.'.format(type(record['matrix'])))
+            f"matrix should be a dict, got {type(record['matrix'])}.")
         self.assertIn('A', record['matrix'],
             'Expected amino acid A as a key in the matrix dict.')
         self.assertIsInstance(record['matrix']['A'], dict,
@@ -89,20 +89,20 @@ class AAIndex2_Tests(unittest.TestCase):
 
         #verify row_order and col_order are lists of 20 amino acids
         self.assertIsInstance(record['row_order'], list,
-            'row_order should be a list, got {}.'.format(type(record['row_order'])))
+            f"row_order should be a list, got {type(record['row_order'])}.")
         self.assertEqual(len(record['row_order']), 20,
-            'row_order should contain 20 amino acids, got {}.'.format(len(record['row_order'])))
+            f"row_order should contain 20 amino acids, got {len(record['row_order'])}.")
         self.assertEqual(len(record['col_order']), 20,
-            'col_order should contain 20 amino acids, got {}.'.format(len(record['col_order'])))
+            f"col_order should contain 20 amino acids, got {len(record['col_order'])}.")
 #2.)
         record2 = aaindex2[index_code2]  # AZAE970101
 
         self.assertTrue(record2['description'].startswith('The single residue substitution matrix'),
-            'Unexpected description for AZAE970101, got {}.'.format(record2['description']))
+            f"Unexpected description for AZAE970101, got {record2['description']}.")
         self.assertEqual(record2['pmid'], '9488136',
-            'Unexpected pmid for AZAE970101, got {}.'.format(record2['pmid']))
+            f"Unexpected pmid for AZAE970101, got {record2['pmid']}.")
         self.assertIsInstance(record2['matrix'], dict,
-            'matrix should be a dict, got {}.'.format(type(record2['matrix'])))
+            f"matrix should be a dict, got {type(record2['matrix'])}.")
 #3.)
         #lowercase record code should produce the same result as uppercase
         record3 = aaindex2[index_code3]
@@ -126,13 +126,13 @@ class AAIndex2_Tests(unittest.TestCase):
         record = aaindex2[index_code1]
 
         self.assertEqual(record.description, 'The PAM-120 matrix (Altschul, 1991)',
-            'Unexpected description via dot notation, got {}.'.format(record.description))
+            f'Unexpected description via dot notation, got {record.description}.')
         self.assertEqual(record.pmid, '1713145 2051488',
-            'Unexpected pmid via dot notation, got {}.'.format(record.pmid))
+            f'Unexpected pmid via dot notation, got {record.pmid}.')
         self.assertEqual(record.notes, '',
-            'Unexpected notes via dot notation, got {}.'.format(record.notes))
+            f'Unexpected notes via dot notation, got {record.notes}.')
         self.assertTrue(record.references.startswith('Altschul, S.F.'),
-            'Unexpected references via dot notation, got {}.'.format(record.references))
+            f'Unexpected references via dot notation, got {record.references}.')
         self.assertIsInstance(record.matrix, dict,
             'matrix via dot notation should be a dict.')
         self.assertIsInstance(record.row_order, list,
@@ -141,9 +141,9 @@ class AAIndex2_Tests(unittest.TestCase):
         record2 = aaindex2[index_code2]
 
         self.assertTrue(record2.description.startswith('The single residue substitution matrix'),
-            'Unexpected description for AZAE970101, got {}.'.format(record2.description))
+            f'Unexpected description for AZAE970101, got {record2.description}.')
         self.assertEqual(record2.pmid, '9488136',
-            'Unexpected pmid via dot notation, got {}.'.format(record2.pmid))
+            f'Unexpected pmid via dot notation, got {record2.pmid}.')
 
     def test_get(self):
         """ Test Case for the get() method: pairwise lookup, symmetry,
@@ -153,13 +153,13 @@ class AAIndex2_Tests(unittest.TestCase):
 #1.)
         #test known scalar values from the substitution matrix
         self.assertEqual(aaindex2.get(index_code1, 'A', 'A'), 3.0,
-            'Expected A,A = 3.0 for ALTS910101, got {}.'.format(aaindex2.get(index_code1, 'A', 'A')))
+            f"Expected A,A = 3.0 for ALTS910101, got {aaindex2.get(index_code1, 'A', 'A')}.")
         self.assertEqual(aaindex2.get(index_code1, 'A', 'R'), -3.0,
-            'Expected A,R = -3.0 for ALTS910101, got {}.'.format(aaindex2.get(index_code1, 'A', 'R')))
+            f"Expected A,R = -3.0 for ALTS910101, got {aaindex2.get(index_code1, 'A', 'R')}.")
         self.assertEqual(aaindex2.get(index_code2, 'L', 'L'), 9.0,
-            'Expected L,L = 9.0 for AZAE970101, got {}.'.format(aaindex2.get(index_code2, 'L', 'L')))
+            f"Expected L,L = 9.0 for AZAE970101, got {aaindex2.get(index_code2, 'L', 'L')}.")
         self.assertEqual(aaindex2.get(index_code2, 'V', 'I'), 9.0,
-            'Expected V,I = 9.0 for AZAE970101, got {}.'.format(aaindex2.get(index_code2, 'V', 'I')))
+            f"Expected V,I = 9.0 for AZAE970101, got {aaindex2.get(index_code2, 'V', 'I')}.")
 #2.)
         #symmetry: (aa1, aa2) must equal (aa2, aa1)
         self.assertEqual(aaindex2.get(index_code1, 'A', 'R'), aaindex2.get(index_code1, 'R', 'A'),
@@ -191,19 +191,19 @@ class AAIndex2_Tests(unittest.TestCase):
         #search for 'substitution' - should return 39 matching records
         search1 = aaindex2.search(description1)
         self.assertEqual(len(search1), 39,
-            'Expected 39 records for substitution search, got {}.'.format(len(search1)))
+            f'Expected 39 records for substitution search, got {len(search1)}.')
         for index, val in search1.items():
             self.assertIn(description1.lower(), val['description'].lower(),
-                'Search keyword not found in returned record description for {}.'.format(index))
+                f'Search keyword not found in returned record description for {index}.')
 #2.)
         #nonsense search terms should return empty dict
         search2 = aaindex2.search(description2)
         self.assertEqual(len(search2), 0,
-            'Expected 0 records for nonsense search, got {}.'.format(len(search2)))
+            f'Expected 0 records for nonsense search, got {len(search2)}.')
 #3.)
         search3 = aaindex2.search(description3)
         self.assertEqual(len(search3), 0,
-            'Expected 0 records for nonsense search, got {}.'.format(len(search3)))
+            f'Expected 0 records for nonsense search, got {len(search3)}.')
 #4.)
         #non-string/list input should raise TypeError
         with self.assertRaises(TypeError):
@@ -221,13 +221,13 @@ class AAIndex2_Tests(unittest.TestCase):
 #1.)
         #known record codes should be present
         self.assertIn(index_code1, aaindex2.record_codes(),
-            'Expected {} in AAi2 record codes.'.format(index_code1))
+            f'Expected {index_code1} in AAi2 record codes.')
         self.assertIn(index_code2, aaindex2.record_codes(),
-            'Expected {} in AAi2 record codes.'.format(index_code2))
+            f'Expected {index_code2} in AAi2 record codes.')
         self.assertIn(index_code3, aaindex2.record_codes(),
-            'Expected {} in AAi2 record codes.'.format(index_code3))
+            f'Expected {index_code3} in AAi2 record codes.')
         self.assertIn(index_code4, aaindex2.record_codes(),
-            'Expected {} in AAi2 record codes.'.format(index_code4))
+            f'Expected {index_code4} in AAi2 record codes.')
 #2.)
         #erroneous codes should not be present
         self.assertNotIn('BLAH999999', aaindex2.record_codes(),
@@ -242,10 +242,10 @@ class AAIndex2_Tests(unittest.TestCase):
         amino_acids = aaindex2.amino_acids()
 #1.)
         self.assertEqual(len(amino_acids), 20,
-            'Expected 20 amino acids, got {}.'.format(len(amino_acids)))
+            f'Expected 20 amino acids, got {len(amino_acids)}.')
         for aa in amino_acids:
             self.assertIn(aa, valid_amino_acids,
-                'Amino acid {} not in list of valid amino acids.'.format(aa))
+                f'Amino acid {aa} not in list of valid amino acids.')
 
     def test_record_names(self):
         """ Test Case to check that all record descriptions are returned correctly. """
@@ -253,7 +253,7 @@ class AAIndex2_Tests(unittest.TestCase):
 #1.)
         #number of names must equal number of records
         self.assertEqual(len(record_names), aaindex2.num_records(),
-            'Number of record names should equal num_records(), got {}.'.format(len(record_names)))
+            f'Number of record names should equal num_records(), got {len(record_names)}.')
 #2.)
         #known descriptions should be present
         self.assertIn('The PAM-120 matrix (Altschul, 1991)', record_names,
@@ -264,13 +264,13 @@ class AAIndex2_Tests(unittest.TestCase):
     def test_last_updated(self):
         """ Testing the last updated class attribute matches the known database version. """
         self.assertEqual(aaindex2.last_updated, "February 13, 2017",
-            'Last updated value does not match expected, got {}.'.format(aaindex2.last_updated))
+            f'Last updated value does not match expected, got {aaindex2.last_updated}.')
 
     def test_dunder_methods(self):
         """ Test Case for __len__, __contains__, __iter__, and __repr__ dunder methods. """
 #1.) __len__
         self.assertEqual(len(aaindex2), 94,
-            'Expected __len__ to return 94, got {}.'.format(len(aaindex2)))
+            f'Expected __len__ to return 94, got {len(aaindex2)}.')
 #2.) __contains__
         self.assertIn('ALTS910101', aaindex2,
             'Expected ALTS910101 in aaindex2 via __contains__.')
@@ -279,19 +279,19 @@ class AAIndex2_Tests(unittest.TestCase):
 #3.) __iter__
         codes_from_iter = list(aaindex2)
         self.assertEqual(len(codes_from_iter), 94,
-            'Expected 94 codes from __iter__, got {}.'.format(len(codes_from_iter)))
+            f'Expected 94 codes from __iter__, got {len(codes_from_iter)}.')
         self.assertIn('ALTS910101', codes_from_iter,
             'Expected ALTS910101 in __iter__ output.')
 #4.) __repr__
         self.assertEqual(repr(aaindex2), "AAIndex2(records=94, last_updated='February 13, 2017')",
-            'Unexpected __repr__ output: {}.'.format(repr(aaindex2)))
+            f'Unexpected __repr__ output: {repr(aaindex2)}.')
 
     def test_values(self):
         """ Test Case for values() which returns the full matrix dict for a record. """
 #1.)
         matrix = aaindex2.values('ALTS910101')
         self.assertIsInstance(matrix, dict,
-            'values() should return a dict, got {}.'.format(type(matrix)))
+            f'values() should return a dict, got {type(matrix)}.')
         self.assertIn('A', matrix,
             'Expected amino acid A as key in values() result.')
         self.assertEqual(matrix['A']['A'], 3.0,

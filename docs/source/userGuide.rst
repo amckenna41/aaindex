@@ -68,9 +68,6 @@ biochemical properties of amino acids.
    # Filter records by category
    aaindex1.get_record_by_category("sec_struct")
 
-   # Visualise a record as a bar chart (requires matplotlib)
-   aaindex1.plot("ANDN920101")
-
 
 AAindex2 — Substitution Matrices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -99,9 +96,6 @@ matrix of pairwise scores.
    # Search by keyword
    results = aaindex2.search("mutation")
 
-   # Visualise as a heatmap (requires matplotlib)
-   aaindex2.plot("ALTS910101")
-
 
 AAindex3 — Contact Potential Matrices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -121,9 +115,6 @@ interface as AAindex2.
 
    # Get the full 20x20 matrix
    aaindex3.values("TANS760101")
-
-   # Visualise as a heatmap (requires matplotlib)
-   aaindex3.plot("TANS760101")
 
 
 Common Operations
@@ -153,19 +144,3 @@ objects, which support both dict-style and attribute-style access:
    record.description       # attribute-style (identical result)
 
 
-Visualisation
--------------
-
-Each database provides a ``plot()`` method. AAindex1 produces a bar chart of the
-20 amino acid values; AAindex2 and AAindex3 produce heatmaps of the 20 x 20
-matrix. Requires ``matplotlib``:
-
-.. code-block:: bash
-
-   pip install matplotlib
-
-.. code-block:: python
-
-   aaindex1.plot("ANDN920101")
-   aaindex2.plot("ALTS910101")
-   aaindex3.plot("TANS760101")

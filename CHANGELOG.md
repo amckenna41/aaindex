@@ -48,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Canonical `Map` class in `_aaindex_matrix.py` — single source for the dot-notation dict wrapper, imported by all three modules.
 - `__all__` exported from every module (`aaindex1`, `aaindex2`, `aaindex3`, `_aaindex_matrix`).
 - `values(record_code)` method on AAIndex2 and AAIndex3 for retrieving the full matrix dict.
-- `plot(record_code)` method on AAIndex1 (bar chart), AAIndex2, and AAIndex3 (heatmap) for quick visual inspection (requires matplotlib).
+- `plot(record_code)` method on AAIndex1 (bar chart), AAIndex2, and AAIndex3 (heatmap) for quick visual inspection.
 - Type annotations on all public methods and properties across all modules.
 - Google-style docstrings on all classes and methods.
 - Python 3.11 and 3.12 classifiers in project metadata.

@@ -80,10 +80,10 @@ class AAIndex1():
         #open AAi file for reading and parsing
         tmp_filepath = os.path.join(self.aaindex_module_path, self.data_dir, self.aaindex_filename)
         try:
-            with open(tmp_filepath, 'r') as f:
+            with open(tmp_filepath) as f:
                 lines = f.readlines()
-        except IOError as e:
-            raise IOError(f"Error opening AAindex1 file, check file is in filepath: {tmp_filepath}.") from e
+        except OSError as e:
+            raise OSError(f"Error opening AAindex1 file, check file is in filepath: {tmp_filepath}.") from e
 
         #regex to normalise double-quote characters in field values
         clean_up_pattern = re.compile("\"")
@@ -202,10 +202,10 @@ class AAIndex1():
             category_filepath = os.path.join(self.aaindex_module_path, self.data_dir, aaindex_category_file)
 
         try:
-            with open(category_filepath, 'r') as f:
+            with open(category_filepath) as f:
                 category_lines = f.readlines()
-        except IOError as e:
-            raise IOError(f"Error opening AAindex1 category file: {category_filepath}.") from e
+        except OSError as e:
+            raise OSError(f"Error opening AAindex1 category file: {category_filepath}.") from e
 
         #write non-comment lines to parsed output file (strip '#' metadata lines)
         category_output_file = "aaindex_categories.txt"
@@ -256,8 +256,8 @@ class AAIndex1():
             with open(cat_filepath) as f_out:
                 reader = csv.reader(f_out, delimiter="\t")
                 d = list(reader)
-        except IOError as e:
-            raise IOError(f"Error opening AAindex1 category file: {cat_filepath}.") from e
+        except OSError as e:
+            raise OSError(f"Error opening AAindex1 category file: {cat_filepath}.") from e
 
         aaindex_category: Dict = {}
 
@@ -375,41 +375,6 @@ class AAIndex1():
             if record.get('category', '').lower() == category.lower()
         }
         return category_records
-
-    def plot(self, record_code: str) -> None:
-        """Display a bar chart of the 20 amino acid values for a given record.
-
-        Requires matplotlib to be installed. The ``-`` gap placeholder is
-        excluded from the plot.
-
-        Args:
-            record_code: AAindex accession number.
-
-        Raises:
-            ImportError: If matplotlib is not installed.
-            ValueError: If record_code is not found in the database.
-        """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError as e:
-            raise ImportError(
-                "matplotlib is required for plot(). "
-                "Install it with: pip install matplotlib"
-            ) from e
-
-        record = self[record_code]
-        vals = record.values
-        #exclude the '-' gap placeholder from the plot
-        aa_list = sorted(k for k in vals if k != '-')
-        scores = [vals[aa] for aa in aa_list]
-
-        fig, ax = plt.subplots(figsize=(10, 5))
-        ax.bar(aa_list, scores)
-        ax.set_xlabel("Amino Acid")
-        ax.set_ylabel("Value")
-        ax.set_title(f"{record_code}: {record.description}")
-        plt.tight_layout()
-        plt.show()
 
     def __getitem__(self, record_code: str) -> "Map":
         """Return a record by accession number wrapped in a Map (dot-notation dict).
