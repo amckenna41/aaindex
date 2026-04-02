@@ -1,4 +1,4 @@
-## Python package for working with the AAindex database (https://www.genome.jp/aaindex/) <a name="TOP"></a>
+# aaindex - Python package for working with the AAindex database (https://www.genome.jp/aaindex/) <a name="TOP"></a>
 <p align="center">
   <img src="https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_logo.png" height="400" />
 </p>
@@ -20,7 +20,9 @@ Table of Contents
   * [Requirements](#requirements)
   * [Installation](#installation)
   * [Usage](#usage)
+  * [Documentation](#documentation)
   * [Tests](#tests)
+  * [Directories](#directories)
   * [Contact](#contact)
   * [License](#license)
   * [References](#References)
@@ -31,8 +33,8 @@ The AAindex is a database of numerical indices representing various physicochemi
 
 This `aaindex` Python software package is a very lightweight way of accessing the data represented in the various AAindex databases, requiring no additional external library installations. Any record within the 3 databases and their associated data/numerical indices can be accessed in one simple command. The package supports all three AAindex databases: AAindex1 (amino acid property indices), AAindex2 (substitution matrices), and AAindex3 (contact potential matrices).
 
-* A quick Colab notebook demo of `aaindex` is available [here][demo]. 
-* A **Medium** article that dives deeper into the AAindex and the `aaindex` software itself is available [here][medium].
+* 💻 A quick Colab notebook demo of `aaindex` is available [here][demo]. 
+* 📝 A **Medium** article that dives deeper into the AAindex and the `aaindex` software itself is available [here][medium].
 
 <!-- <strong>A demo of the software is available [here](https://colab.research.google.com/drive/1dccV_n1BRMiU8W13F9PPXbSaFzvOdQLC?usp=sharing). </strong> -->
 <!-- <strong>A medium article outlining the background and usage of the aaindex database and software is available [here]().</strong> -->
@@ -201,6 +203,48 @@ aaindex1.record_codes()
 aaindex1.record_names()
 ```
 
+### Get amino acid values for a record
+```python
+# Shortcut to retrieve only the values dict without fetching the full record
+aaindex1.values('CHOP780206')
+# {'-': 0, 'A': 0.7, 'C': 0.65, 'D': 0.98, ...}
+```
+
+### Search records by keyword
+```python
+# Search with a single keyword (case-insensitive)
+aaindex1.search('hydrophobicity')   # dict of matching records
+
+# Search with multiple keywords — returns records matching any of the terms
+aaindex1.search(['hydrophobicity', 'charge'])   # dict of matching records
+```
+
+### Get records by category
+```python
+# Retrieve all records belonging to a given category (case-insensitive)
+aaindex1.get_record_by_category('sec_struct')   # dict of matching records
+aaindex1.get_record_by_category('hydrophobicity')
+```
+
+### Get list of amino acid single-letter codes
+```python
+aaindex1.amino_acids()
+# ['-', 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+```
+
+### Built-in protocol support
+```python
+# Check membership
+'CHOP780206' in aaindex1   # True
+
+# Get total number of records
+len(aaindex1)              # 566
+
+# Iterate over all accession numbers
+for record_code in aaindex1:
+    print(record_code)
+```
+
 ## AAIndex2 Usage
 ```python
 from aaindex import aaindex2
@@ -222,8 +266,18 @@ aaindex2.get('ALTS910101', 'R', 'A')   # -3.0
 # Get just the matrix dict for a record
 aaindex2.values('ALTS910101')
 
-# Search records by keyword
-aaindex2.search('substitution')   # dict of matching records
+# Get list of amino acid single-letter codes
+aaindex2.amino_acids()   # ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+
+# Search records by keyword — accepts a single string or a list of keywords
+aaindex2.search('substitution')              # dict of matching records
+aaindex2.search(['substitution', 'PAM'])     # records matching any keyword
+
+# Built-in protocol support
+'ALTS910101' in aaindex2   # True
+len(aaindex2)              # 94
+for record_code in aaindex2:
+    print(record_code)
 ```
 
 ## AAIndex3 Usage
@@ -247,8 +301,30 @@ aaindex3.get('TANS760101', 'A', 'R')   # -3.4
 # Get just the matrix dict for a record
 aaindex3.values('TANS760101')
 
-# Search records by keyword
-aaindex3.search('contact potential')   # dict of matching records
+# Get list of amino acid single-letter codes
+aaindex3.amino_acids()   # ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+
+# Search records by keyword — accepts a single string or a list of keywords
+aaindex3.search('contact potential')                    # dict of matching records
+aaindex3.search(['contact potential', 'statistical'])   # records matching any keyword
+
+# Built-in protocol support
+'TANS760101' in aaindex3   # True
+len(aaindex3)              # 47
+for record_code in aaindex3:
+    print(record_code)
+```
+
+Documentation 📖
+----------------
+Full API documentation is available on [Read the Docs][readthedocs].
+
+
+Tests 🧪
+--------
+To run all tests, from the main `aaindex` folder run:
+```
+python3 -m unittest discover tests
 ```
 
 Directories 📁
@@ -258,12 +334,6 @@ Directories 📁
 * `/images` - images used throughout README.
 * `/docs` - `aaindex` documentation.
  
-Tests 🧪
---------
-To run all tests, from the main `aaindex` folder run:
-```
-python3 -m unittest discover tests
-```
 
 Contact ✉️
 ---------
@@ -294,3 +364,5 @@ References
 [demo]: https://colab.research.google.com/drive/1dccV_n1BRMiU8W13F9PPXbSaFzvOdQLC?usp=sharing
 [medium]: https://medium.com/@ajmckenna69/aaindex-a63de37ec118
 [Issues]: https://github.com/amckenna41/aaindex/issues
+[readthedocs]: https://aaindex.readthedocs.io/en/latest/
+[changelog]: https://github.com/amckenna41/aaindex/blob/main/CHANGELOG.md

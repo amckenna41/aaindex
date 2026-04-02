@@ -140,3 +140,5 @@ old_stuff/
 
 # Cached JSON data files generated at runtime
 aaindex/data/*.json
+
+TODO.md

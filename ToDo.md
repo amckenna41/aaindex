@@ -1,9 +1,9 @@
 - [ ] Visualise function in class where you can do histogram/heat map etc of each amino acid and corresponding value.
 - [ ] Use aaindex API URLs search_url = 'https://www.genome.jp/dbget-bin/www_bfind_sub?locale=en&serv=gn&keywords=charge&page=1&max_hit=0&dbkey=aaindex' , record_url = 'https://www.genome.jp/dbget-bin/www_bget?aaindex:KLEP840101'
 - [ ] Pull request to biopython for aaindex.
-- [ ] Add readthedocs badge.
+- [X] Add readthedocs badge.
 - [ ] Add emojis to readme - test if they show up on Mac and Windows.
-- [ ] Add documentation section in readme.
+- [X] Add documentation section in readme.
 - [X] Test last updated - self.last_updated = "February 13, 2017" #as shown on homepage (https://www.genome.jp/aaindex/)
 - [X] Remove one-hot encoding from aaindex, and sci-kit learn library. 
 - [X] Below aaindex record image in readme - add description of each record key.
@@ -26,8 +26,8 @@
 - [X] Read over code.
 - [X] Read over tests.
 - [X] Change physiochemical to physicochemical.
-- [ ] In /docs folder, add readme with process of how to build and upload the docs to the
+- [X] In /docs folder, add readme with process of how to build and upload the docs to the
 - [ ] https://github.com/tadorfer/AAIndex/blob/master/raw_to_df.ipynb
-- [ ] Parameter typing https://docs.python.org/3/library/typing.html
+- [X] Parameter typing https://docs.python.org/3/library/typing.html
 - [ ] Update workflows
 - [ ] Double check spelling using code-spell-checker extension
