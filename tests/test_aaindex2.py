@@ -2,7 +2,6 @@
 ################             AAindex2 Module Tests             #################
 ################################################################################
 
-import os
 import unittest
 from aaindex import aaindex2, __version__
 
@@ -34,15 +33,6 @@ class AAIndex2_Tests(unittest.TestCase):
     test_dunder_methods:
         testing __len__, __contains__, __iter__, and __repr__ dunder methods.
     """
-    def setUp(self):
-        """ Initialise test data directory. """
-        self.test_dir = 'test_data'
-
-        #make test data directory, remove old one if exists
-        if os.path.isdir(self.test_dir):
-            os.rmdir(self.test_dir)
-        os.mkdir(self.test_dir)
-
     def test_num_records(self):
         """ Test Case to check the correct number of records are present in the AAi2 database.
         To date, 94 records are present in the database. """
@@ -334,10 +324,6 @@ class AAIndex2_Tests(unittest.TestCase):
         record = aaindex2['  ALTS910101  ']
         self.assertEqual(record.description, 'The PAM-120 matrix (Altschul, 1991)',
             'Whitespace-padded record code should resolve correctly.')
-
-    def tearDown(self):
-        """ Remove any test data or directories. """
-        os.rmdir('test_data')
 
 if __name__ == '__main__':
     #run all unit tests

@@ -2,7 +2,6 @@
 ################             AAindex3 Module Tests             #################
 ################################################################################
 
-import os
 import unittest
 from aaindex import aaindex3, __version__
 
@@ -35,15 +34,6 @@ class AAIndex3_Tests(unittest.TestCase):
     test_dunder_methods:
         testing __len__, __contains__, __iter__, and __repr__ dunder methods.
     """
-    def setUp(self):
-        """ Initialise test data directory. """
-        self.test_dir = 'test_data'
-
-        #make test data directory, remove old one if exists
-        if os.path.isdir(self.test_dir):
-            os.rmdir(self.test_dir)
-        os.mkdir(self.test_dir)
-
     def test_num_records(self):
         """ Test Case to check the correct number of records are present in the AAi3 database.
         To date, 47 records are present in the database. """
@@ -339,10 +329,6 @@ class AAIndex3_Tests(unittest.TestCase):
         self.assertEqual(record.description,
             'Statistical contact potential derived from 25 x-ray protein structures',
             'Whitespace-padded record code should resolve correctly.')
-
-    def tearDown(self):
-        """ Remove any test data or directories. """
-        os.rmdir('test_data')
 
 if __name__ == '__main__':
     #run all unit tests

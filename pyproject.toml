@@ -8,7 +8,7 @@ version = "1.2.0"
 description = "A lightweight Python software package for accessing the data in the various AAIndex databases, which represent the physicochemical, biochemical and structural properties of amino acids as numerical indices."
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [
     { name = "AJ McKenna", email = "amckenna41@qub.ac.uk" },
 ]
@@ -36,11 +36,10 @@ classifiers = [
     "Intended Audience :: Healthcare Industry",
     "Intended Audience :: Information Technology",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Scientific/Engineering :: Bio-Informatics",

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0]
 
 ### Fixed
 - `Map.__getattr__` now raises `AttributeError` for missing keys instead of silently returning `None` — fixes `hasattr()` behaviour and prevents silent bugs.
@@ -14,41 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MANIFEST.in` glob tightened from `graft aaindex/data*` to `graft aaindex/data`.
 
 ### Added
-- Python 3.11 and 3.12 added to CI test matrix in `build_test.yml`.
-- `CODECOV_TOKEN` secret reference added to codecov upload step.
-- Single-source versioning via `importlib.metadata.version()` in `__init__.py`.
-- `__all__` in `__init__.py` for explicit public API.
-- `aaindex/py.typed` PEP 561 marker for type-checker compatibility.
-- `[tool.ruff]` and `[tool.ruff.lint]` configuration in `pyproject.toml`.
-- `docs/requirements.txt` for Read the Docs builds.
-- `tests/conftest.py` with shared `aai1`, `aai2`, `aai3` fixtures.
-- `test_plot`, `test_plot_invalid_record`, and `test_repr_format` tests for AAIndex1.
-- Changelog page added to Sphinx documentation.
-- `.pre-commit-config.yaml` with ruff and pre-commit-hooks.
-- `sphinx-rtd-theme` added to `[project.optional-dependencies.docs]`.
-- `aaindex/data/README.md` updated to list `aaindex2.json` and `aaindex3.json`.
-- JSON cache files (`aaindex/data/*.json`) added to `.gitignore`.
-
-### Changed
-- `num_records()` in `AAIndex1` now uses `len(self.aaindex_json)` instead of sorting all keys.
-- Deploy workflows (`deploy_pypi.yml`, `deploy_test_pypi.yml`) upgraded from Python 3.10 to 3.12.
-- `TODO.md` trimmed to only remaining actionable items.
-- `aaindex/README.md` simplified to a one-liner pointing at the project README.
-- CircleCI badge removed from root `README.md`.
-
-### Removed
-- `.circleci/` directory (stale, referenced deleted `setup.py`).
-- `old_stuff/` directory (legacy archived code).
-- `aaindex.egg-info/` build artifact.
-
-## [1.2.0]
-
-### Added
-- `_AAIndexMatrix` shared base class in `aaindex/_aaindex_matrix.py` — eliminates code duplication between AAIndex2 and AAIndex3 by centralising parsing, search, lookup, `values()`, `plot()`, and dunder methods.
+- `_AAIndexMatrix` shared base class in `aaindex/_aaindex_matrix.py` — eliminates code duplication between AAIndex2 and AAIndex3 by centralising parsing, search, lookup, `values()`, and dunder methods.
 - Canonical `Map` class in `_aaindex_matrix.py` — single source for the dot-notation dict wrapper, imported by all three modules.
 - `__all__` exported from every module (`aaindex1`, `aaindex2`, `aaindex3`, `_aaindex_matrix`).
 - `values(record_code)` method on AAIndex2 and AAIndex3 for retrieving the full matrix dict.
-- `plot(record_code)` method on AAIndex1 (bar chart), AAIndex2, and AAIndex3 (heatmap) for quick visual inspection.
 - Type annotations on all public methods and properties across all modules.
 - Google-style docstrings on all classes and methods.
 - Python 3.11 and 3.12 classifiers in project metadata.
@@ -56,6 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edge-case tests: non-canonical amino acid "Z" in `get()`, empty-string search, `TypeError` for non-string `__getitem__` input, whitespace-padded record codes.
 - Explicit full-matrix symmetry tests for AAIndex2 and AAIndex3.
 - `values()` tests for AAIndex2 and AAIndex3.
+- Python 3.11 and 3.12 added to CI test matrix in `build_test.yml`.
+- `CODECOV_TOKEN` secret reference added to codecov upload step.
+- Single-source versioning via `importlib.metadata.version()` in `__init__.py`.
+- `__all__` in `__init__.py` for explicit public API.
+- `aaindex/py.typed` PEP 561 marker for type-checker compatibility.
+- `[tool.ruff]` and `[tool.ruff.lint]` configuration in `pyproject.toml`.
+- `docs/requirements.txt` for Read the Docs builds.
+- `test_repr_format` test for AAIndex1.
+- Changelog page added to Sphinx documentation.
+- `.pre-commit-config.yaml` with ruff and pre-commit-hooks.
+- `sphinx-rtd-theme` added to `[project.optional-dependencies.docs]`.
+- `aaindex/data/README.md` updated to list `aaindex2.json` and `aaindex3.json`.
+- JSON cache files (`aaindex/data/*.json`) added to `.gitignore`.
 
 ### Changed
 - `AAIndex2` and `AAIndex3` now inherit from `_AAIndexMatrix`; module files reduced from ~500+ lines each to ~30 lines.
@@ -63,10 +45,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All `.format()` string formatting replaced with f-strings across the codebase.
 - `__init__.py` cleaned up: removed `__name__` override, camelCase attributes (`__authorEmail__`), and redundant metadata (`__download_url__`, `__status__`, `__keywords__`, `__test_suite__`). Only `__version__`, `__author__`, and `__license__` remain.
 - README updated: removed stale "plans to include AAindex 2 & 3" text, added full AAIndex2 and AAIndex3 usage examples, updated install instructions from `setup.py` to `pip install .`.
+- `num_records()` in `AAIndex1` now uses `len(self.aaindex_json)` instead of sorting all keys.
+- Deploy workflows (`deploy_pypi.yml`, `deploy_test_pypi.yml`) upgraded from Python 3.10 to 3.12.
+- `TODO.md` trimmed to only remaining actionable items.
+- `aaindex/README.md` simplified to a one-liner pointing at the project README.
+- CircleCI badge removed from root `README.md`.
+
 
 ### Removed
 - `setup.cfg` and `setup.py` — replaced by `pyproject.toml`.
 - Duplicate `Map` class definitions from `aaindex1.py`, `aaindex2.py`, and `aaindex3.py`.
+- `.circleci/` directory (stale, referenced deleted `setup.py`).
+- `old_stuff/` directory (legacy archived code).
+- `aaindex.egg-info/` build artifact.
 
 ## [1.1.2] - 2023-11-16
 
@@ -138,6 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions workflow for automated build and test.
 
 [Unreleased]: https://github.com/amckenna41/aaindex/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/amckenna41/aaindex/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/amckenna41/aaindex/compare/v1.1.0...v1.1.2
 [1.1.0]: https://github.com/amckenna41/aaindex/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/amckenna41/aaindex/compare/v0.0.1...v1.0.0

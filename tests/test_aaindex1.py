@@ -2,7 +2,6 @@
 ################             AAindex1 Module Tests             #################
 ################################################################################
 
-import os
 import unittest
 from unittest.mock import patch
 from importlib.metadata import metadata
@@ -47,15 +46,6 @@ class AAIndex1_Tests(unittest.TestCase):
     test_repr_format:
         testing __repr__ returns the expected format string.
     """
-    def setUp(self):
-        """ Inititalise AAindex module variables and test data directory. """
-        self.test_dir = 'test_data'
-
-        #make test data directory, remove old one if exists
-        if (os.path.isdir(self.test_dir)):
-            os.rmdir(self.test_dir)
-        os.mkdir(self.test_dir)
-
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
         self.assertEqual(__version__, "1.2.0",
@@ -664,10 +654,6 @@ class AAIndex1_Tests(unittest.TestCase):
 #3.) number of category entries should equal number of records
         self.assertEqual(len(cats), aaindex1.num_records(),
             f'Number of category entries should equal num_records(), got {len(cats)}.')
-
-    def tearDown(self):
-        """ Remove any test data or directories. """
-        os.rmdir('test_data')
 
 if __name__ == '__main__':
     #run all unit tests
