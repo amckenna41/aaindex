@@ -3,12 +3,15 @@
 ################################################################################
 
 #importing required modules and dependencies
+import difflib
 import json
 import os
 import sys
 import copy
 import re
-from typing import Dict, Iterator, List, Optional, Union
+import warnings
+from importlib.metadata import version as _pkg_version, PackageNotFoundError
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 
 class Map(dict):
@@ -50,10 +53,38 @@ class Map(dict):
 
     def __delitem__(self, key):
         super().__delitem__(key)
-        del self.__dict__[key]
+        self.__dict__.pop(key, None)
 
     def __repr__(self) -> str:
-        return f"Map({dict.__repr__(self)})"
+        """Return a structured, human-readable representation of the record."""
+        summary_keys = ("description", "pmid", "notes", "category", "is_symmetric")
+        lines = []
+        for key in summary_keys:
+            if key in self:
+                val = self[key]
+                if isinstance(val, str) and len(val) > 80:
+                    val_repr = repr(val[:77] + "...")
+                else:
+                    val_repr = repr(val)
+                lines.append(f"  {key}: {val_repr}")
+        for key in ("values", "matrix", "correlation_coefficients"):
+            if key in self:
+                val = self[key]
+                if isinstance(val, dict):
+                    lines.append(f"  {key}: {{...}} ({len(val)} entries)")
+                else:
+                    lines.append(f"  {key}: {val!r}")
+        if "references" in self:
+            ref = self["references"]
+            if isinstance(ref, str) and len(ref) > 80:
+                lines.append(f"  references: {repr(ref[:77] + '...')}")
+            else:
+                lines.append(f"  references: {ref!r}")
+        return "AAIndexRecord(\n" + "\n".join(lines) + "\n)"
+
+    def __str__(self) -> str:
+        """Return a human-readable string representation of the record."""
+        return self.__repr__()
 
 
 class _AAIndexMatrix:
@@ -79,21 +110,37 @@ class _AAIndexMatrix:
         )
         self.data_dir = "data"
         self.aaindex_filename = filename
+        #date as shown on https://www.genome.jp/aaindex/
+        self.last_updated = "February 13, 2017"
+        #database is loaded lazily on first access to avoid unnecessary I/O at import time
+        self._aaindex_json: Optional[Dict] = None
+        self._amino_acids_cache: Optional[List[str]] = None
+        try:
+            self.version = _pkg_version("aaindex")
+        except PackageNotFoundError:
+            self.version = "unknown"
 
-        #load from cached JSON if available, otherwise parse the raw file
+    def _load_data(self) -> None:
+        """Load the database from the JSON cache, or parse the raw file if the cache is absent."""
         json_path = os.path.join(
             self.aaindex_module_path, self.data_dir, self.aaindex_filename + ".json"
         )
         if os.path.isfile(json_path):
             with open(json_path) as aai_json:
-                self.aaindex_json = json.load(aai_json)
+                self._aaindex_json = json.load(aai_json)
+            #normalise correlation_coefficients to float; older cached JSON stored them as strings
+            for record in self._aaindex_json.values():
+                cc = record.get('correlation_coefficients', {})
+                for k, v in list(cc.items()):
+                    if isinstance(v, str):
+                        try:
+                            cc[k] = float(v)
+                        except ValueError:
+                            pass
         else:
-            self.aaindex_json = self.parse_aaindex()
+            self._aaindex_json = self._parse_aaindex()
 
-        #date as shown on https://www.genome.jp/aaindex/
-        self.last_updated = "February 13, 2017"
-
-    def parse_aaindex(self) -> Dict:
+    def _parse_aaindex(self) -> Dict:
         """Parse the raw AAindex database file into a nested dict and cache as JSON.
 
         Each record is keyed by its accession number and stores metadata
@@ -158,7 +205,11 @@ class _AAIndexMatrix:
                     for n in range(0, len(corr_str.split()), 2)
                 ]
                 for pair in corr_pairs:
-                    correlation_coefficients[pair[0]] = pair[1]
+                    if len(pair) == 2:
+                        try:
+                            correlation_coefficients[pair[0]] = float(pair[1])
+                        except ValueError:
+                            pass
 
                 #parse the M block into a full symmetric matrix
                 matrix: Dict = {}
@@ -171,8 +222,14 @@ class _AAIndexMatrix:
                     if stripped.startswith("rows"):
                         #format: rows = <AA_STRING> cols = <AA_STRING>
                         parts = stripped.replace(",", "").split()
-                        row_order = list(parts[2])
-                        col_order = list(parts[5])
+                        if len(parts) >= 6:
+                            row_order = list(parts[2])
+                            col_order = list(parts[5])
+                        else:
+                            warnings.warn(
+                                f"Malformed rows/cols header in record {name!r}: {stripped!r}",
+                                UserWarning, stacklevel=2,
+                            )
                     else:
                         row_vals: List = []
                         for token in stripped.split():
@@ -187,18 +244,38 @@ class _AAIndexMatrix:
                             matrix_rows.append(row_vals)
 
                 #reconstruct full symmetric matrix from lower-triangular data
+                #detect whether matrix is lower-triangular (symmetric) or full (non-symmetric)
+                #a lower-triangular matrix has row i containing i+1 values;
+                #a full matrix has every row containing len(col_order) values
+                is_full = bool(
+                    matrix_rows
+                    and col_order
+                    and len(matrix_rows[0]) == len(col_order)
+                )
+
                 for i, row_aa in enumerate(row_order):
                     if i >= len(matrix_rows):
+                        warnings.warn(
+                            f"Matrix for record {name!r} has fewer rows than expected "
+                            f"({len(matrix_rows)} vs {len(row_order)}); matrix may be incomplete.",
+                            UserWarning, stacklevel=2,
+                        )
                         break
                     matrix.setdefault(row_aa, {})
                     for j, val in enumerate(matrix_rows[i]):
                         if j >= len(col_order):
+                            warnings.warn(
+                                f"Matrix row {row_aa!r} in record {name!r} has fewer columns "
+                                f"than expected ({j} vs {len(col_order)}); matrix may be incomplete.",
+                                UserWarning, stacklevel=2,
+                            )
                             break
                         col_aa = col_order[j]
                         matrix[row_aa][col_aa] = val
-                        #fill the symmetric counterpart
-                        matrix.setdefault(col_aa, {})
-                        matrix[col_aa][row_aa] = val
+                        if not is_full:
+                            #lower-triangular: fill the symmetric counterpart
+                            matrix.setdefault(col_aa, {})
+                            matrix[col_aa][row_aa] = val
 
                 if name in aaindex_json:
                     raise ValueError(f"Duplicate accession number found: {name}.")
@@ -212,6 +289,7 @@ class _AAIndexMatrix:
                     "matrix": matrix,
                     "row_order": row_order,
                     "col_order": col_order,
+                    "is_symmetric": not is_full,
                 }
                 current_dict = copy.deepcopy(template_dict)
                 continue
@@ -221,26 +299,46 @@ class _AAIndexMatrix:
                 current_entry = line[0]
             current_dict[current_entry].append(line[1:].strip())
 
-        #cache parsed database as JSON for fast subsequent loads
+        #cache parsed database as JSON for fast subsequent loads; non-fatal if the data dir is read-only
         json_out_path = os.path.join(
             self.aaindex_module_path, self.data_dir, self.aaindex_filename + ".json"
         )
-        with open(json_out_path, "w") as output_f:
-            json.dump(aaindex_json, output_f, indent=4, sort_keys=True)
+        try:
+            with open(json_out_path, "w") as output_f:
+                json.dump(aaindex_json, output_f, indent=4, sort_keys=True)
+        except OSError:
+            pass
 
         return aaindex_json
+
+    def parse_aaindex(self) -> Dict:
+        """Deprecated: use _parse_aaindex() instead.
+
+        .. deprecated::
+            This method is an internal implementation detail and will be
+            removed in a future version.
+        """
+        warnings.warn(
+            "parse_aaindex() is deprecated and will be removed in a future version. "
+            "It is an internal implementation detail.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._parse_aaindex()
 
     def get(self, record_code: str, aa1: str, aa2: str) -> Optional[float]:
         """Return the pairwise matrix score for two amino acids from a given record.
 
-        The matrix is symmetric so get(code, aa1, aa2) == get(code, aa2, aa1).
-        Returns None when either amino acid carries an NA value in the source data
+        For symmetric (lower-triangular) records, get(code, aa1, aa2) ==
+        get(code, aa2, aa1). For non-symmetric records, order matters:
+        get(code, aa1, aa2) may differ from get(code, aa2, aa1).
+        Returns None when the amino acid pair has an NA value in the source data
         or when the amino acid letter is not present in this record's matrix.
 
         Args:
             record_code: AAindex accession number.
-            aa1: Single-letter code for the first amino acid.
-            aa2: Single-letter code for the second amino acid.
+            aa1: Single-letter code for the first amino acid (row).
+            aa2: Single-letter code for the second amino acid (column).
 
         Returns:
             Pairwise score as float, or None if data is not available.
@@ -277,43 +375,108 @@ class _AAIndexMatrix:
         """
         return self[record_code].matrix
 
-    def search(self, description: Union[str, List[str]]) -> Dict:
-        """Search records by keyword(s) present in their description field.
+    def search(self, query: Union[str, List[str]]) -> Dict:
+        """Search records by keyword(s) across all text fields.
+
+        Searches description, accession code, PMID, references, and notes.
+        Matching is case-insensitive.
 
         Args:
-            description: Keyword string or list of keyword strings.
-                         Matching is case-insensitive.
+            query: Keyword string or list of keyword strings.
 
         Returns:
             Dict of matching records keyed by accession number.
             Returns an empty dict if no records match.
 
         Raises:
-            TypeError: If description is not a str or list.
+            TypeError: If query is not a str or list.
         """
         all_indices: Dict = {}
-        if not isinstance(description, (list, str)):
+        if not isinstance(query, (list, str)):
             raise TypeError(
-                f"description must be a list or str, got {type(description)}."
+                f"query must be a list or str, got {type(query)}."
             )
-        if not isinstance(description, list):
-            description = [description]
-        for desc in description:
+        if not isinstance(query, list):
+            query = [query]
+        for term in query:
+            term_lower = term.lower()
             for index, value in self.aaindex_json.items():
-                if desc.lower() in value["description"].lower():
+                if (
+                    term_lower in value["description"].lower()
+                    or term_lower in index.lower()
+                    or term_lower in value["pmid"].lower()
+                    or term_lower in value["references"].lower()
+                    or term_lower in value["notes"].lower()
+                ):
                     all_indices[index] = value
         return all_indices
+
+    def search_fuzzy(
+        self,
+        query: str,
+        n: int = 10,
+        cutoff: float = 0.0,
+    ) -> Dict:
+        """Search records using fuzzy matching with ranked results.
+
+        Scores each record by how closely *query* matches any of its text
+        fields (description, accession code, PMID, references, notes) using
+        ``difflib.SequenceMatcher``. Results are returned in descending score
+        order (most relevant first) with no external dependencies.
+
+        Args:
+            query: Search string.
+            n: Maximum number of results to return. Defaults to ``10``.
+            cutoff: Minimum similarity score in [0, 1] to include a record.
+                    Defaults to ``0.0`` (all records scored, top *n* returned).
+
+        Returns:
+            Dict of matching records keyed by accession number, ordered by
+            descending similarity score.
+
+        Raises:
+            TypeError: If *query* is not a str.
+            ValueError: If *n* < 1 or *cutoff* is outside [0, 1].
+        """
+        if not isinstance(query, str):
+            raise TypeError(f"query must be a str, got {type(query)}.")
+        if not isinstance(n, int) or n < 1:
+            raise ValueError(f"n must be a positive int, got {n}.")
+        if not (0.0 <= cutoff <= 1.0):
+            raise ValueError(f"cutoff must be in [0, 1], got {cutoff}.")
+        query_lower = query.lower()
+        scored: List[Tuple[float, str]] = []
+        for code, record in self.aaindex_json.items():
+            candidate_fields = [
+                record.get("description", ""),
+                code,
+                record.get("pmid", ""),
+                record.get("references", ""),
+                record.get("notes", ""),
+            ]
+            score = max(
+                difflib.SequenceMatcher(None, query_lower, field.lower()).ratio()
+                for field in candidate_fields
+                if field
+            )
+            if score >= cutoff:
+                scored.append((score, code))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return {code: self.aaindex_json[code] for _, code in scored[:n]}
 
     def amino_acids(self) -> List[str]:
         """Return sorted list of the 20 canonical amino acid single-letter codes.
 
         Derived from the row_order field of the first record in the database.
+        Result is cached after the first call.
 
         Returns:
             Sorted list of single-letter amino acid codes.
         """
-        first_record = self.aaindex_json[next(iter(self.aaindex_json))]
-        return sorted(first_record["row_order"])
+        if self._amino_acids_cache is None:
+            first_record = self.aaindex_json[next(iter(self.aaindex_json))]
+            self._amino_acids_cache = sorted(first_record["row_order"])
+        return self._amino_acids_cache
 
     def record_codes(self) -> List[str]:
         """Return sorted list of all accession numbers in the database.
@@ -339,6 +502,95 @@ class _AAIndexMatrix:
         """
         return [v["description"] for v in self.aaindex_json.values()]
 
+    def to_dict(self, record_code: Optional[str] = None) -> Dict:
+        """Export one record or the full database as a plain Python dict.
+
+        Args:
+            record_code: If given, export only that record keyed by its
+                         accession number. If ``None`` (default), export
+                         the entire database.
+
+        Returns:
+            Dict containing the requested records.
+
+        Raises:
+            ValueError: If *record_code* is not found in the database.
+        """
+        if record_code is not None:
+            code = record_code.strip().upper()
+            if code not in self.aaindex_json:
+                raise ValueError(
+                    f"Record ({code}) not found in {self.__class__.__name__}."
+                )
+            return {code: dict(self.aaindex_json[code])}
+        return dict(self.aaindex_json)
+
+    def to_json(self, record_code: Optional[str] = None, indent: int = 4) -> str:
+        """Serialise one record or the full database to a JSON string.
+
+        Args:
+            record_code: If given, serialise only that record. If ``None``
+                         (default), serialise the entire database.
+            indent: JSON indentation level. Defaults to ``4``.
+
+        Returns:
+            JSON-formatted string.
+
+        Raises:
+            ValueError: If *record_code* is not found in the database.
+        """
+        return json.dumps(self.to_dict(record_code), indent=indent)
+
+    def to_dataframe(self, record_code: Optional[str] = None) -> Any:
+        """Export pairwise matrix scores as a pandas DataFrame.
+
+        Requires ``pandas`` to be installed. If pandas is not available a
+        clear ``ImportError`` is raised rather than a silent failure.
+
+        When *record_code* is given the returned DataFrame is the full 20×20
+        (or N×N) matrix for that record, with row and column labels from
+        ``row_order`` and ``col_order``. When *record_code* is ``None`` a
+        MultiIndex DataFrame is returned with index levels
+        ``(accession, row_aa)`` and column labels from ``col_order``.
+
+        Args:
+            record_code: If given, export only that record's matrix.
+                         If ``None`` (default), export all records.
+
+        Returns:
+            ``pandas.DataFrame`` representing the requested matrix data.
+
+        Raises:
+            ImportError: If ``pandas`` is not installed.
+            ValueError: If *record_code* is not found in the database.
+        """
+        try:
+            import pandas as pd  # noqa: PLC0415
+        except ImportError as exc:
+            raise ImportError(
+                "pandas is required for to_dataframe(). "
+                "Install it with: pip install pandas"
+            ) from exc
+
+        if record_code is not None:
+            code = record_code.strip().upper()
+            record = self[code]
+            return pd.DataFrame.from_dict(record['matrix'], orient='index')
+
+        #build a MultiIndex DataFrame across all records
+        rows = []
+        index_tuples = []
+        first_record = self.aaindex_json[next(iter(self.aaindex_json))]
+        col_order = first_record.get('col_order', sorted(first_record.get('matrix', {}).keys()))
+        for code, record in self.aaindex_json.items():
+            matrix = record.get('matrix', {})
+            for row_aa in record.get('row_order', sorted(matrix.keys())):
+                row_data = matrix.get(row_aa, {})
+                rows.append([row_data.get(col_aa) for col_aa in col_order])
+                index_tuples.append((code, row_aa))
+        multi_index = pd.MultiIndex.from_tuples(index_tuples, names=['record', 'aa'])
+        return pd.DataFrame(rows, index=multi_index, columns=col_order)
+
     def __getitem__(self, record_code: str) -> "Map":
         """Return a record by accession number wrapped in a Map (dot-notation dict).
 
@@ -360,8 +612,12 @@ class _AAIndexMatrix:
                 f"record_code must be a string, got {type(record_code)}."
             )
         if record_code not in self.aaindex_json:
+            close = difflib.get_close_matches(
+                record_code, self.aaindex_json.keys(), n=3, cutoff=0.6
+            )
+            hint = f" Did you mean: {close}?" if close else ""
             raise ValueError(
-                f"Record ({record_code}) not found in {self.__class__.__name__}."
+                f"Record ({record_code}) not found in {self.__class__.__name__}.{hint}"
             )
         return Map(self.aaindex_json[record_code])
 
@@ -394,11 +650,26 @@ class _AAIndexMatrix:
 ######################          Getters & Setters          ######################
 
     @property
+    def aaindex_json(self) -> Dict:
+        """Parsed database dict, loaded lazily on first access."""
+        if self._aaindex_json is None:
+            self._load_data()
+        return self._aaindex_json
+
+    @aaindex_json.setter
+    def aaindex_json(self, value: Dict) -> None:
+        self._aaindex_json = value
+
+    @property
     def data_dir(self) -> str:
         return self._data_dir
 
     @data_dir.setter
     def data_dir(self, value: str) -> None:
+        if os.path.basename(value) != value:
+            raise ValueError(
+                f"data_dir must be a simple directory name with no path separators, got: {value!r}"
+            )
         self._data_dir = value
 
     @property
@@ -407,6 +678,10 @@ class _AAIndexMatrix:
 
     @aaindex_filename.setter
     def aaindex_filename(self, value: str) -> None:
+        if os.path.basename(value) != value:
+            raise ValueError(
+                f"aaindex_filename must be a simple filename with no path separators, got: {value!r}"
+            )
         self._aaindex_filename = value
 
     @property

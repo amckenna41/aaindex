@@ -220,6 +220,7 @@ aaindex1.search(['hydrophobicity', 'charge'])   # dict of matching records
 ```
 
 ### Get records by category
+> **Note:** `get_record_by_category()` is available on `AAIndex1` only. `AAIndex2` and `AAIndex3` records do not include a category field.
 ```python
 # Retrieve all records belonging to a given category (case-insensitive)
 aaindex1.get_record_by_category('sec_struct')   # dict of matching records
@@ -230,6 +231,56 @@ aaindex1.get_record_by_category('hydrophobicity')
 ```python
 aaindex1.amino_acids()
 # ['-', 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+```
+
+### Encode a protein sequence as a numeric feature vector
+```python
+# Map each amino acid in a sequence to its index value
+aaindex1.encode('ACDEFGHIKLMNPQRSTVWY', 'KYTJ820101')
+# [1.8, 2.5, -3.5, -3.5, 2.8, -0.4, -3.2, -1.3, -3.9, 3.8, ...]
+
+# NA values encode as None; gaps use gap_value (default 0.0)
+aaindex1.encode('ACGP-', 'AVBF000101', gap_value=0.0)
+```
+
+### Find correlated indices
+```python
+# Get all indices directly correlated with a seed (|r| >= 0.8 by default)
+aaindex1.get_correlated_indices('KYTJ820101')
+# {'EISD840101': 0.949, 'JOND750101': 0.838, ...}
+
+# Expand to 2-hop neighbours
+aaindex1.get_correlated_indices('KYTJ820101', depth=2)
+
+# Raise the threshold
+aaindex1.get_correlated_indices('KYTJ820101', min_correlation=0.9)
+```
+
+### Compare two indices (Pearson r)
+```python
+# Compute Pearson correlation between any two AAindex1 records
+aaindex1.compare_indices('KYTJ820101', 'EISD840101')   # e.g. 0.949
+aaindex1.compare_indices('KYTJ820101', 'KYTJ820101')   # 1.0
+```
+
+### Export to dict, JSON, or pandas DataFrame
+```python
+# Export one record or the full database as a Python dict
+aaindex1.to_dict('KYTJ820101')   # single record
+aaindex1.to_dict()               # all 566 records
+
+# Export as a JSON string
+aaindex1.to_json('KYTJ820101')
+aaindex1.to_json()
+
+# Export amino acid values as a pandas DataFrame (pandas must be installed)
+aaindex1.to_dataframe('KYTJ820101')  # DataFrame with 1 row, amino acid columns
+aaindex1.to_dataframe()              # DataFrame with 566 rows
+
+# AAindex2 / AAindex3 export the pairwise matrix
+aaindex2.to_dict('ALTS910101')
+aaindex2.to_dataframe('ALTS910101')  # 20×20 DataFrame
+aaindex2.to_dataframe()              # MultiIndex DataFrame (record, row_aa)
 ```
 
 ### Built-in protocol support
@@ -346,7 +397,12 @@ Distributed under the MIT License. See `LICENSE` for more details.
 References
 ----------
 \[1\]: Shuichi Kawashima, Minoru Kanehisa, AAindex: Amino Acid index database, Nucleic Acids Research, Volume 28, Issue 1, 1 January 2000, Page 374, https://doi.org/10.1093/nar/28.1.374 <br>
-\[2\]: https://www.genome.jp/aaindex/ 
+\[2\]: https://www.genome.jp/aaindex/ <br>
+\[3\]: Nakai, K., Kidera, A., and Kanehisa, M.; Cluster analysis of amino acid indices for prediction of protein structure and function. Protein Eng. 2, 93-100 (1988). [PMID:3244698] <br>
+\[4\]: Tomii, K. and Kanehisa, M.; Analysis of amino acid indices and mutation matrices for sequence comparison and structure prediction of proteins. Protein Eng. 9, 27-36 (1996). [PMID:9053899] <br>
+\[5\]: Kawashima, S., Ogata, H., and Kanehisa, M.; AAindex: amino acid index database. Nucleic Acids Res. 27, 368-369 (1999). [PMID:9847231] <br>
+\[6\]: Kawashima, S. and Kanehisa, M.; AAindex: amino acid index database. Nucleic Acids Res. 28, 374 (2000). [PMID:10592278] <br>
+\[7\]: Kawashima, S., Pokarowski, P., Pokarowska, M., Kolinski, A., Katayama, T., and Kanehisa, M.; AAindex: amino acid index database, progress report 2008. Nucleic Acids Res. 36, D202-D205 (2008). [PMID:17998252] 
 
 [<img src="https://img.shields.io/github/stars/amckenna41/aaindex?color=green&label=star%20it%20on%20GitHub" width="132" height="20" alt="Star it on GitHub">](https://github.com/amckenna41/aaindex)
 

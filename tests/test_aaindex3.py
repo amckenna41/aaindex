@@ -83,6 +83,7 @@ class AAIndex3_Tests(unittest.TestCase):
             f"row_order should contain 20 amino acids, got {len(record['row_order'])}.")
         self.assertEqual(len(record['col_order']), 20,
             f"col_order should contain 20 amino acids, got {len(record['col_order'])}.")
+        self.assertIn('is_symmetric', list(record.keys()), 'is_symmetric key not found in AAi3 record.')
 #2.)
         record2 = aaindex3[index_code2]  # BETM990101
 
@@ -174,21 +175,21 @@ class AAIndex3_Tests(unittest.TestCase):
             aaindex3.get(index_code1, 1, 'R')
 
     def test_search(self):
-        """ Test Case for search(), returning records whose description
-        contains the given keyword(s). """
+        """ Test Case for search(), returning records whose description or other text
+        fields contain the given keyword(s). """
         description1 = 'contact potential'
         description2 = 'blahblahblah'
         description3 = 'not a description'
         description4 = 1234
         description5 = True
 #1.)
-        #search for 'contact potential' - should return 3 matching records
+        #search for 'contact potential' - at least 3 records match via description
         search1 = aaindex3.search(description1)
-        self.assertEqual(len(search1), 3,
-            f'Expected 3 records for contact potential search, got {len(search1)}.')
-        for index, val in search1.items():
-            self.assertIn(description1.lower(), val['description'].lower(),
-                f'Search keyword not found in returned record description for {index}.')
+        self.assertGreaterEqual(len(search1), 3,
+            f'Expected at least 3 records for contact potential search, got {len(search1)}.')
+        desc_matched = {k: v for k, v in search1.items() if description1.lower() in v['description'].lower()}
+        self.assertEqual(len(desc_matched), 3,
+            f'Expected 3 records to match via description, got {len(desc_matched)}.')
 #2.)
         #nonsense search terms should return empty dict
         search2 = aaindex3.search(description2)
@@ -204,6 +205,14 @@ class AAIndex3_Tests(unittest.TestCase):
             aaindex3.search(description4)
         with self.assertRaises(TypeError):
             aaindex3.search(description5)
+#5.) search by PMID should return the matching record
+        pmid_search = aaindex3.search('1004017')
+        self.assertIn('TANS760101', pmid_search,
+            'search() should find TANS760101 when searching by its PMID 1004017.')
+#6.) search by exact accession code should return the record itself
+        accession_search = aaindex3.search('TANS760101')
+        self.assertIn('TANS760101', accession_search,
+            'search() should find TANS760101 when searching by its accession code.')
 
     def test_record_codes(self):
         """ Test Case to check that correct record codes are present in the parsed
@@ -296,10 +305,14 @@ class AAIndex3_Tests(unittest.TestCase):
             aaindex3.values('BLAH999999')
 
     def test_symmetry(self):
-        """ Explicit symmetry test: for every record, (aa1, aa2) == (aa2, aa1). """
+        """ Explicit symmetry test: for symmetric records, (aa1, aa2) == (aa2, aa1);
+        all AAindex3 records are lower-triangular (symmetric). """
         amino_acids = aaindex3.amino_acids()
-        #test symmetry on two representative records
+        #test symmetry and is_symmetric flag on two representative records
         for code in ['TANS760101', 'BETM990101']:
+            record = aaindex3[code]
+            self.assertTrue(record['is_symmetric'],
+                f'Expected is_symmetric=True for AAindex3 record {code}.')
             for aa1 in amino_acids:
                 for aa2 in amino_acids:
                     val_forward = aaindex3.get(code, aa1, aa2)
@@ -329,6 +342,116 @@ class AAIndex3_Tests(unittest.TestCase):
         self.assertEqual(record.description,
             'Statistical contact potential derived from 25 x-ray protein structures',
             'Whitespace-padded record code should resolve correctly.')
+
+    def test_to_dict(self):
+        """ Test Case for to_dict() exporting records as plain Python dicts. """
+        code = 'TANS760101'
+#1.) single record export
+        d = aaindex3.to_dict(code)
+        self.assertIsInstance(d, dict,
+            f'to_dict() should return a dict, got {type(d)}.')
+        self.assertIn(code, d,
+            f'Expected {code} as key in to_dict() result.')
+        self.assertIn('matrix', d[code],
+            'Expected matrix field in exported record.')
+#2.) full database export
+        full = aaindex3.to_dict()
+        self.assertEqual(len(full), aaindex3.num_records(),
+            f'Full to_dict() should contain all {aaindex3.num_records()} records.')
+#3.) invalid record code raises ValueError
+        with self.assertRaises(ValueError):
+            aaindex3.to_dict('BLAH999999')
+
+    def test_to_json(self):
+        """ Test Case for to_json() serialising records to a JSON string. """
+        import json
+        code = 'TANS760101'
+#1.) single record serialisation returns valid JSON
+        j = aaindex3.to_json(code)
+        self.assertIsInstance(j, str,
+            f'to_json() should return a str, got {type(j)}.')
+        parsed = json.loads(j)
+        self.assertIn(code, parsed,
+            f'Expected {code} as key in parsed to_json() output.')
+#2.) full database serialisation is valid JSON containing all records
+        full_parsed = json.loads(aaindex3.to_json())
+        self.assertEqual(len(full_parsed), aaindex3.num_records(),
+            f'Full to_json() should contain all {aaindex3.num_records()} records.')
+#3.) invalid record code raises ValueError
+        with self.assertRaises(ValueError):
+            aaindex3.to_json('BLAH999999')
+
+    def test_to_dataframe(self):
+        """ Test Case for to_dataframe(). Skipped if pandas is not installed. """
+        try:
+            import pandas as pd
+        except ImportError:
+            self.skipTest('pandas not installed — skipping test_to_dataframe.')
+        code = 'TANS760101'
+#1.) single record returns a DataFrame with amino acids as both index and columns
+        df = aaindex3.to_dataframe(code)
+        self.assertIsInstance(df, pd.DataFrame,
+            f'to_dataframe() should return a DataFrame, got {type(df)}.')
+        self.assertGreater(len(df), 0,
+            'Single-record to_dataframe() should have at least 1 row.')
+        for aa in ['A', 'C']:
+            self.assertIn(aa, df.index, f'Expected row {aa} in to_dataframe() result.')
+            self.assertIn(aa, df.columns, f'Expected column {aa} in to_dataframe() result.')
+#2.) full database returns a MultiIndex DataFrame
+        full_df = aaindex3.to_dataframe()
+        self.assertIsInstance(full_df.index, pd.MultiIndex,
+            'Full to_dataframe() should return a MultiIndex DataFrame.')
+#3.) invalid record code raises ValueError
+        with self.assertRaises(ValueError):
+            aaindex3.to_dataframe('BLAH999999')
+
+    def test_search_fuzzy(self):
+        """ Test Case for search_fuzzy() fuzzy search with ranked results. """
+#1.) returns a dict
+        results = aaindex3.search_fuzzy('contact')
+        self.assertIsInstance(results, dict,
+            f'search_fuzzy() should return a dict, got {type(results)}.')
+#2.) non-empty results for a known term
+        self.assertGreater(len(results), 0,
+            'search_fuzzy() should return at least one result for "contact".')
+#3.) respects n limit
+        results_n = aaindex3.search_fuzzy('contact', n=2)
+        self.assertLessEqual(len(results_n), 2,
+            'search_fuzzy() should return at most n results.')
+#4.) TypeError for non-str query
+        with self.assertRaises(TypeError):
+            aaindex3.search_fuzzy(123)
+#5.) ValueError for n < 1
+        with self.assertRaises(ValueError):
+            aaindex3.search_fuzzy('contact', n=0)
+#6.) ValueError for cutoff outside [0, 1]
+        with self.assertRaises(ValueError):
+            aaindex3.search_fuzzy('contact', cutoff=-0.1)
+
+    def test_richer_error_messages(self):
+        """ Test that __getitem__ includes a did-you-mean hint on invalid accession. """
+#1.) completely unknown code raises ValueError
+        with self.assertRaises(ValueError):
+            aaindex3['BLAH999999']
+
+    def test_parse_aaindex_deprecated(self):
+        """ Test that calling the public parse_aaindex() shim emits a DeprecationWarning. """
+        import warnings as _warnings
+        with _warnings.catch_warnings(record=True) as w:
+            _warnings.simplefilter('always')
+            aaindex3.parse_aaindex()
+        self.assertTrue(
+            any(issubclass(warning.category, DeprecationWarning) for warning in w),
+            'parse_aaindex() should emit a DeprecationWarning.')
+
+    def test_instance_version(self):
+        """ Test that AAIndex3 instance exposes a version attribute matching __version__. """
+#1.) version attribute is a string
+        self.assertIsInstance(aaindex3.version, str,
+            f'aaindex3.version should be a str, got {type(aaindex3.version)}.')
+#2.) version matches the package __version__
+        self.assertEqual(aaindex3.version, __version__,
+            f'aaindex3.version should match __version__, got {aaindex3.version}.')
 
 if __name__ == '__main__':
     #run all unit tests

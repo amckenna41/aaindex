@@ -91,6 +91,7 @@ aaindex1.search(['hydrophobicity', 'charge'])   # dict of matching records
 ```
 
 ### Get records by category
+> **Note:** `get_record_by_category()` is available on `AAIndex1` only. `AAIndex2` and `AAIndex3` records do not include a category field.
 ```python
 # Retrieve all records belonging to a given category (case-insensitive)
 aaindex1.get_record_by_category('sec_struct')   # dict of matching records

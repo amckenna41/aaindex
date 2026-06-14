@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0]
+
+### Added
+- `search_fuzzy(query, n=10, cutoff=0.0)` on all three databases — fuzzy/partial search using `difflib.SequenceMatcher`. Results are ordered by descending similarity score (most relevant first) and limited to the top `n` matches. Accepts a `cutoff` threshold in [0, 1].
+- `AAIndex1.valid_categories()` — returns a sorted list of all distinct category strings present in the database.
+- `AAIndex1.batch_encode(sequences, record_code, gap_value=0.0)` — encodes a list of protein sequences as numeric feature vectors using a single index in one call. The record is looked up once and reused across all sequences, making this more efficient than calling `encode()` in a loop.
+- `version` attribute on all three database class instances (`aaindex1.version`, `aaindex2.version`, `aaindex3.version`) — exposes the installed package version string without needing to import `importlib.metadata` separately.
+- `AAIndex1.encode(sequence, record_code)` — encodes a protein sequence as a numeric feature vector using a named index. NA positions are returned as `None`; gaps use a configurable `gap_value` (default `0.0`).
+- `AAIndex1.get_correlated_indices(record_code, min_correlation=0.8, depth=1)` — traverses the stored `correlation_coefficients` chains to return a dict of related index codes and their Pearson r values, up to `depth` hops from the seed.
+- `AAIndex1.compare_indices(code1, code2)` — computes the Pearson correlation coefficient between two AAindex1 records using their amino acid values (NA positions excluded pairwise). Returns `None` when insufficient non-NA values are available.
+- `to_dict(record_code=None)` on all three databases — exports one record or the full database as a plain Python dict.
+- `to_json(record_code=None, indent=4)` on all three databases — serialises one record or the full database to a JSON string.
+- `to_dataframe(record_code=None)` on all three databases — exports amino acid values (AAindex1) or pairwise matrix scores (AAindex2/3) as a `pandas.DataFrame`. pandas is optional; a clear `ImportError` is raised if it is not installed.
+
+### Fixed
+- `AAIndex1`: amino acids with no measured value (NA in source data) are now stored as `None` instead of `0.0`, preventing silent arithmetic errors. Arithmetic on `None` now raises `TypeError` as expected.
+- `search()` on all three databases now searches all text fields — description, accession code, PMID, references, and notes — instead of description only.
+- `AAIndex2`/`AAIndex3`: records with full 20×20 matrices (non-symmetric) are now parsed correctly. Previously, symmetric fill overwrote correct directional values. Each record now exposes an `is_symmetric` boolean field.
+- `correlation_coefficients` values are now stored and returned as `float` (previously stored as raw strings from the source file). Existing JSON caches are normalised to float on load so no re-parse is required.
+- Gap placeholder `'-'` in `AAIndex1` values dicts is now stored as `float` `0.0` instead of `int` `0`, making it type-consistent with all other numeric values. Existing caches are normalised on load.
+- `_parse_categories()` no longer writes an intermediate `aaindex_categories.txt` file to the package data directory. Filtering of comment lines is now done in memory, fixing failures on read-only installs (system Python, Docker, virtualenvs without writable site-packages).
+- `_parse_categories()` now rejects relative paths with directory components (e.g. `../../etc/passwd`) to prevent path traversal; only bare filenames or absolute paths are accepted.
+- `data_dir` and `aaindex_filename` property setters on all three database classes now raise `ValueError` if the value contains path separators, preventing path traversal via these attributes.
+- `AAIndex1._parse_aaindex()`: added guard against I-block with fewer than 3 lines; malformed records now emit a `UserWarning` and are skipped rather than raising `IndexError`.
+- `_parse_aaindex()` on `AAIndex2`/`AAIndex3`: added bounds check on the rows/cols header (`len(parts) >= 6`); malformed headers emit a `UserWarning` instead of crashing with `IndexError`.
+- `_parse_aaindex()` on `AAIndex2`/`AAIndex3`: incomplete matrix rows or columns now emit a `UserWarning` instead of silently producing a partial matrix with no indication of data loss.
+- JSON cache write in `_parse_aaindex()` on all three classes is now wrapped in `try/except OSError` — a read-only data directory no longer prevents the parsed data from being returned and used.
+- `_AAIndexMatrix.amino_acids()` result is now cached after the first call, matching the behaviour of `AAIndex1.amino_acids()` and avoiding repeated list allocation on repeated calls.
+- `Map.__delitem__` now uses `dict.pop(key, None)` to remove the key from `__dict__`, preventing `KeyError` when a key is present in the underlying dict but was never routed through `__setitem__`.
+
+### Changed
+- `get_record_by_category()` now raises `ValueError` (with a did-you-mean hint) when an unknown category is passed, instead of silently returning an empty dict.
+- `__getitem__` on all three databases now includes a did-you-mean hint in the `ValueError` message when an accession code is not found and a close match exists.
+- Database parsing is now deferred (lazy loading): `AAIndex1`, `AAIndex2`, and `AAIndex3` no longer parse or load JSON on import. Data is loaded on first access, reducing cold-start time.
+- `parse_aaindex()` and `parse_categories()` are now private methods (`_parse_aaindex()` and `_parse_categories()`). The old public names are retained as deprecated shims that emit `DeprecationWarning`.
+- `Map.__repr__` now returns a structured `AAIndexRecord(...)` representation with metadata fields listed individually and large nested dicts (values, matrix) summarised as `{...} (N entries)`. `Map.__str__` is aliased to the same output.
+- Verified: all public method names are already snake_case; no camelCase renames were required.
+- `get_record_by_category()` is an `AAIndex1`-only method. `AAIndex2` and `AAIndex3` records have no category field and therefore do not support this method.
+
 ## [1.2.0]
 
 ### Fixed
@@ -128,7 +167,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial `README.md` with usage examples and database description.
 - GitHub Actions workflow for automated build and test.
 
-[Unreleased]: https://github.com/amckenna41/aaindex/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/amckenna41/aaindex/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/amckenna41/aaindex/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/amckenna41/aaindex/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/amckenna41/aaindex/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/amckenna41/aaindex/compare/v1.1.0...v1.1.2
 [1.1.0]: https://github.com/amckenna41/aaindex/compare/v1.0.0...v1.1.0
