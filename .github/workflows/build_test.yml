@@ -73,7 +73,7 @@ jobs:
 
       # Upload coverage to Codecov for Python 3.10 only
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         if: ${{ matrix.python-version == '3.12' }}
         with:
           flags: aaindex_coverage
