@@ -66,7 +66,7 @@ jobs:
 
       # Upload coverage XML as artifact
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-xml-${{ matrix.python-version }}
           path: coverage.xml
@@ -126,7 +126,7 @@ jobs:
 
       # Upload all security scan artifacts
       - name: Upload security artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: security-artifacts
           path: artifacts/
@@ -162,7 +162,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload flake8 artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flake8-artifact
           path: flake8_artifacts/flake8_output.txt 
