@@ -444,6 +444,38 @@ class AAIndex3_Tests(unittest.TestCase):
             any(issubclass(warning.category, DeprecationWarning) for warning in w),
             'parse_aaindex() should emit a DeprecationWarning.')
 
+    def test_search_sorted(self):
+        """ Test that search() returns results sorted alphabetically by accession code. """
+        results = aaindex3.search('contact potential')
+        keys = list(results.keys())
+        self.assertEqual(keys, sorted(keys),
+            'search() results should be sorted alphabetically by accession code.')
+
+    def test_plot_heatmap(self):
+        """ Test Case for plot_heatmap(), which plots a 20x20 matrix as a heatmap.
+        Skipped when matplotlib is not installed. """
+        try:
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+        except ImportError:
+            self.skipTest('matplotlib not installed — skipping test_plot_heatmap.')
+        code = 'TANS760101'
+#1.) returns a matplotlib Axes object
+        ax = aaindex3.plot_heatmap(code)
+        self.assertIsNotNone(ax,
+            'plot_heatmap() should return an Axes object.')
+        self.assertEqual(ax.__class__.__name__, 'Axes',
+            f'plot_heatmap() should return Axes, got {type(ax)}.')
+#2.) title contains the record description
+        record = aaindex3[code]
+        self.assertTrue(ax.get_title().startswith(record['description'][:20]),
+            'plot_heatmap() title should start with the record description.')
+#3.) invalid record code raises ValueError
+        with self.assertRaises(ValueError):
+            aaindex3.plot_heatmap('BLAH999999')
+        plt.close('all')
+
     def test_instance_version(self):
         """ Test that AAIndex3 instance exposes a version attribute matching __version__. """
 #1.) version attribute is a string

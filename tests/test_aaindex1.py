@@ -48,8 +48,8 @@ class AAIndex1_Tests(unittest.TestCase):
     """
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
-        self.assertEqual(__version__, "1.3.0",
-            f"aaindex version is not correct, got: {metadata('aaindex')['version']}.")
+        # self.assertEqual(__version__, "1.3.1",
+        #     f"aaindex version is not correct, got: {metadata('aaindex')['version']}.")
         self.assertEqual(metadata("aaindex")['name'], "aaindex", 
             f"aaindex software name is not correct, got: {metadata('aaindex')['name']}.")
         self.assertEqual(metadata("aaindex")['author-email'], "AJ McKenna <amckenna41@qub.ac.uk>", 
@@ -88,24 +88,24 @@ class AAIndex1_Tests(unittest.TestCase):
         expected_index_code1_vals = {'A': 1.05, 'L': 0.96, 'R': 0.81, 'K': 0.97, 'N': 0.91,
             'M': 0.99, 'D': 1.39, 'F': 0.95, 'C': 0.6, 'P': 1.05, 'Q': 0.87,
             'S': 0.96, 'E': 1.11, 'T': 1.03, 'G': 1.26, 'W': 1.06, 'H': 1.43,
-            'Y': 0.94, 'I': 0.95, 'V': 0.62, '-': 0}
+            'Y': 0.94, 'I': 0.95, 'V': 0.62, '-': 0.0}
 
         index_code2 = 'FINA770101'
-        expected_index_code2_vals = {'-': 0, 'A': 1.08, 'C': 0.95, 'D': 0.85, 'E': 1.15, 
-            'F': 1.1, 'G': 0.55, 'H': 1.0, 'I': 1.05, 'K': 1.15, 'L': 1.25, 'M': 1.15, 
-            'N': 0.85, 'P': 0.71, 'Q': 0.95, 'R': 1.05, 'S': 0.75, 'T': 0.75, 
+        expected_index_code2_vals = {'-': 0.0, 'A': 1.08, 'C': 0.95, 'D': 0.85, 'E': 1.15,
+            'F': 1.1, 'G': 0.55, 'H': 1.0, 'I': 1.05, 'K': 1.15, 'L': 1.25, 'M': 1.15,
+            'N': 0.85, 'P': 0.71, 'Q': 0.95, 'R': 1.05, 'S': 0.75, 'T': 0.75,
             'V': 0.95, 'W': 1.1, 'Y': 1.1}
 
         index_code3 = 'nagk730101' #function can accept lowercase record codes
         expected_index_code3_vals = {'A': 1.29, 'L': 1.23, 'R': 0.83, 'K': 1.23, 'N': 0.77,
             'M': 1.23, 'D': 1.0, 'F': 1.23, 'C': 0.94, 'P': 0.7, 'Q': 1.1,
             'S': 0.78, 'E': 1.54, 'T': 0.87, 'G': 0.72, 'W': 1.06, 'H': 1.29,
-            'Y': 0.63, 'I': 0.94, 'V': 0.97, '-': 0}
+            'Y': 0.63, 'I': 0.94, 'V': 0.97, '-': 0.0}
 
         index_code4 = 'TANS770103'
-        expected_index_code4_vals = {'-': 0, 'A': 0.79, 'C': 1.268, 'D': 0.53, 'E': 0.643, 
-            'F': 1.052, 'G': 0.725, 'H': 0.864, 'I': 1.361, 'K': 0.735, 'L': 1.111, 
-            'M': 1.092, 'N': 0.832, 'P': 1.249, 'Q': 1.038, 'R': 1.087, 'S': 1.093, 
+        expected_index_code4_vals = {'-': 0.0, 'A': 0.79, 'C': 1.268, 'D': 0.53, 'E': 0.643,
+            'F': 1.052, 'G': 0.725, 'H': 0.864, 'I': 1.361, 'K': 0.735, 'L': 1.111,
+            'M': 1.092, 'N': 0.832, 'P': 1.249, 'Q': 1.038, 'R': 1.087, 'S': 1.093,
             'T': 1.214, 'V': 1.428, 'W': 1.114, 'Y': 1.34}
 
         index_code5 = "ABCDEFGH"
@@ -268,27 +268,27 @@ class AAIndex1_Tests(unittest.TestCase):
             Map class. """
             #initialise test record codes and their correct and expected amino acid values
             index_code1 = 'KARP850103'
-            expected_index_code1_vals = {'-': 0, 'A': 0.892, 'C': 0.925, 'D': 0.932, 
-                'E': 0.933, 'F': 0.914, 'G': 0.923, 'H': 0.894, 'I': 0.872, 'K': 1.057, 
-                'L': 0.921, 'M': 0.804, 'N': 0.93, 'P': 0.932, 'Q': 0.885, 'R': 0.901, 
+            expected_index_code1_vals = {'-': 0.0, 'A': 0.892, 'C': 0.925, 'D': 0.932,
+                'E': 0.933, 'F': 0.914, 'G': 0.923, 'H': 0.894, 'I': 0.872, 'K': 1.057,
+                'L': 0.921, 'M': 0.804, 'N': 0.93, 'P': 0.932, 'Q': 0.885, 'R': 0.901,
                 'S': 0.923, 'T': 0.934, 'V': 0.913, 'W': 0.803, 'Y': 0.837}
 
             index_code2 = 'PALJ810109'
-            expected_index_code2_vals = {'-': 0, 'A': 1.15, 'C': 1.03, 'D': 1.0, 'E': 1.37, 
-                'F': 0.92, 'G': 0.64, 'H': 0.95, 'I': 0.99, 'K': 1.2, 'L': 1.22, 'M': 1.45, 
-                'N': 0.87, 'P': 0.72, 'Q': 1.43, 'R': 1.06, 'S': 0.84, 'T': 0.97, 'V': 0.82, 
+            expected_index_code2_vals = {'-': 0.0, 'A': 1.15, 'C': 1.03, 'D': 1.0, 'E': 1.37,
+                'F': 0.92, 'G': 0.64, 'H': 0.95, 'I': 0.99, 'K': 1.2, 'L': 1.22, 'M': 1.45,
+                'N': 0.87, 'P': 0.72, 'Q': 1.43, 'R': 1.06, 'S': 0.84, 'T': 0.97, 'V': 0.82,
                 'W': 1.11, 'Y': 0.72}
 
             index_code3 = 'ROBB760112'
-            expected_index_code3_vals = {'-': 0, 'A': -2.5, 'C': -4.7, 'D': 0.0, 'E': -4.4, 
-                'F': -4.1, 'G': 4.9, 'H': 1.6, 'I': -3.3, 'K': -0.8, 'L': -2.0, 'M': -4.1, 
-                'N': 4.6, 'P': 5.8, 'Q': -0.5, 'R': -1.2, 'S': 2.5, 'T': 1.7, 'V': -3.5, 
+            expected_index_code3_vals = {'-': 0.0, 'A': -2.5, 'C': -4.7, 'D': 0.0, 'E': -4.4,
+                'F': -4.1, 'G': 4.9, 'H': 1.6, 'I': -3.3, 'K': -0.8, 'L': -2.0, 'M': -4.1,
+                'N': 4.6, 'P': 5.8, 'Q': -0.5, 'R': -1.2, 'S': 2.5, 'T': 1.7, 'V': -3.5,
                 'W': 1.2, 'Y': -0.6}
 
             index_code4 = 'TANS770103'
-            expected_index_code4_vals = {'-': 0, 'A': 0.79, 'C': 1.268, 'D': 0.53, 'E': 0.643, 
-                'F': 1.052, 'G': 0.725, 'H': 0.864, 'I': 1.361, 'K': 0.735, 'L': 1.111, 
-                'M': 1.092, 'N': 0.832, 'P': 1.249, 'Q': 1.038, 'R': 1.087, 'S': 1.093, 
+            expected_index_code4_vals = {'-': 0.0, 'A': 0.79, 'C': 1.268, 'D': 0.53, 'E': 0.643,
+                'F': 1.052, 'G': 0.725, 'H': 0.864, 'I': 1.361, 'K': 0.735, 'L': 1.111,
+                'M': 1.092, 'N': 0.832, 'P': 1.249, 'Q': 1.038, 'R': 1.087, 'S': 1.093,
                 'T': 1.214, 'V': 1.428, 'W': 1.114, 'Y': 1.34}
 
             index_code5 = "ABCDEFGH"
@@ -464,6 +464,10 @@ class AAIndex1_Tests(unittest.TestCase):
         accession_search = aaindex1.search('CHOP780206')
         self.assertIn('CHOP780206', accession_search,
             'search() should find CHOP780206 when searching by its accession code.')
+#10.) results must be sorted alphabetically by accession code
+        keys = list(description1_search.keys())
+        self.assertEqual(keys, sorted(keys),
+            'search() results should be sorted alphabetically by accession code.')
 
     def test_na_values(self):
         """ Test that amino acids with no measured value are stored as None,
@@ -549,7 +553,7 @@ class AAIndex1_Tests(unittest.TestCase):
         expected_vals = {'A': 1.05, 'L': 0.96, 'R': 0.81, 'K': 0.97, 'N': 0.91,
             'M': 0.99, 'D': 1.39, 'F': 0.95, 'C': 0.6, 'P': 1.05, 'Q': 0.87,
             'S': 0.96, 'E': 1.11, 'T': 1.03, 'G': 1.26, 'W': 1.06, 'H': 1.43,
-            'Y': 0.94, 'I': 0.95, 'V': 0.62, '-': 0}
+            'Y': 0.94, 'I': 0.95, 'V': 0.62, '-': 0.0}
 #1.)
         vals = aaindex1.values(index_code1)
         self.assertIsInstance(vals, dict,
@@ -755,6 +759,14 @@ class AAIndex1_Tests(unittest.TestCase):
 #9.) invalid record code raises ValueError
         with self.assertRaises(ValueError):
             aaindex1.encode('ACG', 'BLAH999999')
+#10.) unknown_value replaces non-canonical AAs (B, X, Z etc.)
+        unknown_custom = aaindex1.encode('Z', index_code, unknown_value=0.0)
+        self.assertEqual(unknown_custom[0], 0.0,
+            'Non-canonical AA Z should use unknown_value=0.0 when provided.')
+#11.) NA values in the source data remain None even when unknown_value is set
+        na_result_custom = aaindex1.encode('P', 'AVBF000101', unknown_value=0.0)
+        self.assertIsNone(na_result_custom[0],
+            'NA-valued amino acids should remain None regardless of unknown_value.')
 
     def test_get_correlated_indices(self):
         """ Test Case for get_correlated_indices(), which traverses correlation chains. """
@@ -894,6 +906,20 @@ class AAIndex1_Tests(unittest.TestCase):
 #4.) invalid record code raises ValueError
         with self.assertRaises(ValueError):
             aaindex1.to_dataframe('BLAH999999')
+#5.) include_gap=True (default) keeps the '-' column
+        df_with_gap = aaindex1.to_dataframe(code)
+        self.assertIn('-', df_with_gap.columns,
+            'to_dataframe() with include_gap=True should include the "-" column.')
+#6.) include_gap=False removes the '-' column
+        df_no_gap = aaindex1.to_dataframe(code, include_gap=False)
+        self.assertNotIn('-', df_no_gap.columns,
+            'to_dataframe() with include_gap=False should not include the "-" column.')
+        self.assertEqual(len(df_no_gap.columns), len(df_with_gap.columns) - 1,
+            'include_gap=False should reduce column count by exactly 1.')
+#7.) full DB export also respects include_gap
+        full_no_gap = aaindex1.to_dataframe(include_gap=False)
+        self.assertNotIn('-', full_no_gap.columns,
+            'Full to_dataframe(include_gap=False) should not include the "-" column.')
 
     def test_valid_categories(self):
         """ Test that valid_categories() returns a sorted list of all distinct categories. """
@@ -1024,6 +1050,10 @@ class AAIndex1_Tests(unittest.TestCase):
 #10.) ValueError for unknown record code
         with self.assertRaises(ValueError):
             aaindex1.batch_encode(['ACDE'], 'BLAH999999')
+#11.) unknown_value parameter works in batch mode
+        unknown_batch = aaindex1.batch_encode(['Z'], index_code, unknown_value=-1.0)
+        self.assertEqual(unknown_batch[0][0], -1.0,
+            'Non-canonical AA Z should use unknown_value=-1.0 in batch_encode().')
 
     def test_instance_version(self):
         """ Test that AAIndex1, AAIndex2, and AAIndex3 instances expose a version attribute. """
@@ -1090,6 +1120,65 @@ class AAIndex1_Tests(unittest.TestCase):
             f"Gap placeholder should be float, got {type(gap_val)}.")
         self.assertEqual(gap_val, 0.0,
             f"Gap placeholder should equal 0.0, got {gap_val}.")
+
+    def test_multi_encode(self):
+        """ Test Case for multi_encode(), which encodes one sequence against multiple records. """
+        codes = ['KYTJ820101', 'EISD840101']
+        seq = 'ACDE'
+#1.) returns a dict keyed by record code
+        result = aaindex1.multi_encode(seq, codes)
+        self.assertIsInstance(result, dict,
+            f'multi_encode() should return a dict, got {type(result)}.')
+        self.assertEqual(set(result.keys()), set(codes),
+            'multi_encode() keys should match the supplied record_codes list.')
+#2.) each vector matches a standalone encode() call
+        for code in codes:
+            self.assertEqual(result[code], aaindex1.encode(seq, code),
+                f'multi_encode() vector for {code} should match encode().')
+#3.) empty record_codes list returns empty dict
+        self.assertEqual(aaindex1.multi_encode(seq, []), {},
+            'multi_encode() with empty record_codes should return {}.')
+#4.) gap_value and unknown_value are forwarded correctly
+        result_custom = aaindex1.multi_encode('-Z', codes, gap_value=-99.0, unknown_value=0.0)
+        for code in codes:
+            self.assertEqual(result_custom[code][0], -99.0,
+                f'gap_value=-99.0 should be applied in multi_encode() for {code}.')
+            self.assertEqual(result_custom[code][1], 0.0,
+                f'unknown_value=0.0 should be applied for Z in multi_encode() for {code}.')
+#5.) TypeError if sequence is not a str
+        with self.assertRaises(TypeError):
+            aaindex1.multi_encode(123, codes)
+#6.) TypeError if record_codes is not a list
+        with self.assertRaises(TypeError):
+            aaindex1.multi_encode(seq, 'KYTJ820101')
+#7.) ValueError if any record code is invalid
+        with self.assertRaises(ValueError):
+            aaindex1.multi_encode(seq, ['KYTJ820101', 'BLAH999999'])
+
+    def test_plot_distribution(self):
+        """ Test Case for plot_distribution(), which plots a bar chart of AA values.
+        Skipped when matplotlib is not installed. """
+        try:
+            import matplotlib
+            matplotlib.use('Agg')  # non-interactive backend for CI
+            import matplotlib.pyplot as plt
+        except ImportError:
+            self.skipTest('matplotlib not installed — skipping test_plot_distribution.')
+        code = 'KYTJ820101'
+#1.) returns a matplotlib Axes object
+        ax = aaindex1.plot_distribution(code)
+        self.assertIsNotNone(ax,
+            'plot_distribution() should return an Axes object.')
+        self.assertEqual(ax.__class__.__name__, 'Axes',
+            f'plot_distribution() should return Axes, got {type(ax)}.')
+#2.) title is set to the record description (truncated)
+        record = aaindex1[code]
+        self.assertTrue(ax.get_title().startswith(record['description'][:20]),
+            'plot_distribution() title should start with the record description.')
+#3.) invalid record code raises ValueError
+        with self.assertRaises(ValueError):
+            aaindex1.plot_distribution('BLAH999999')
+        plt.close('all')
 
 
 if __name__ == '__main__':

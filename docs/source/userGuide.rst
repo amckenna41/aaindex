@@ -68,6 +68,29 @@ biochemical properties of amino acids.
    # Filter records by category
    aaindex1.get_record_by_category("sec_struct")
 
+   # Encode a sequence as a numeric vector using one index
+   aaindex1.encode("ACDEFGHIKLM", "KYTJ820101")
+   # [1.8, 2.5, -3.5, -3.5, 2.8, ...]
+
+   # Specify a fill value for non-canonical amino acids (default: None)
+   aaindex1.encode("ACXZ", "KYTJ820101", unknown_value=0.0)
+   # [1.8, 2.5, 0.0, 0.0]
+
+   # Encode against multiple indices in one call (multi-index feature extraction)
+   aaindex1.multi_encode("ACDE", ["KYTJ820101", "EISD840101"])
+   # {'KYTJ820101': [1.8, 2.5, -3.5, -3.5], 'EISD840101': [...]}
+
+   # Encode a batch of sequences
+   aaindex1.batch_encode(["ACDE", "FGHI"], "KYTJ820101")
+   # [[1.8, 2.5, -3.5, -3.5], [-3.2, -0.4, ...]]
+
+   # Export as DataFrame (set include_gap=False to drop the '-' column)
+   aaindex1.to_dataframe("KYTJ820101", include_gap=False)
+
+   # Plot amino acid value distribution (requires matplotlib)
+   ax = aaindex1.plot_distribution("KYTJ820101")
+   import matplotlib.pyplot as plt; plt.show()
+
 
 AAindex2 — Substitution Matrices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -93,8 +116,12 @@ matrix of pairwise scores.
    record.description
    record.matrix
 
-   # Search by keyword
+   # Search by keyword (results sorted alphabetically)
    results = aaindex2.search("mutation")
+
+   # Plot the 20×20 matrix as a heatmap (requires matplotlib)
+   ax = aaindex2.plot_heatmap("ALTS910101")
+   import matplotlib.pyplot as plt; plt.show()
 
 
 AAindex3 — Contact Potential Matrices
@@ -115,6 +142,10 @@ interface as AAindex2.
 
    # Get the full 20x20 matrix
    aaindex3.values("TANS760101")
+
+   # Plot the 20×20 contact potential matrix as a heatmap (requires matplotlib)
+   ax = aaindex3.plot_heatmap("TANS760101")
+   import matplotlib.pyplot as plt; plt.show()
 
 
 Common Operations

@@ -5,13 +5,14 @@
 #importing required modules and dependencies
 import difflib
 import json
+import math
 import os
 import sys
 import copy
 import re
 import warnings
 from importlib.metadata import version as _pkg_version, PackageNotFoundError
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Iterator
 
 
 class Map(dict):
@@ -113,8 +114,8 @@ class _AAIndexMatrix:
         #date as shown on https://www.genome.jp/aaindex/
         self.last_updated = "February 13, 2017"
         #database is loaded lazily on first access to avoid unnecessary I/O at import time
-        self._aaindex_json: Optional[Dict] = None
-        self._amino_acids_cache: Optional[List[str]] = None
+        self._aaindex_json: dict | None = None
+        self._amino_acids_cache: list[str] | None = None
         try:
             self.version = _pkg_version("aaindex")
         except PackageNotFoundError:
@@ -140,7 +141,7 @@ class _AAIndexMatrix:
         else:
             self._aaindex_json = self._parse_aaindex()
 
-    def _parse_aaindex(self) -> Dict:
+    def _parse_aaindex(self) -> dict:
         """Parse the raw AAindex database file into a nested dict and cache as JSON.
 
         Each record is keyed by its accession number and stores metadata
@@ -176,7 +177,7 @@ class _AAIndexMatrix:
         #regex to normalise double-quote characters in field values
         clean_up_pattern = re.compile("\"")
 
-        aaindex_json: Dict = {}
+        aaindex_json: dict = {}
         current_dict = copy.deepcopy(template_dict)
         current_entry: str = "H"  # first non-space line in any block is always H
 
@@ -199,7 +200,7 @@ class _AAIndexMatrix:
 
                 #parse correlation coefficients into a dict
                 corr_str = clean_up_pattern.sub("'", " ".join(current_dict["C"]))
-                correlation_coefficients: Dict = {}
+                correlation_coefficients: dict = {}
                 corr_pairs = [
                     corr_str.split()[n:n + 2]
                     for n in range(0, len(corr_str.split()), 2)
@@ -212,10 +213,10 @@ class _AAIndexMatrix:
                             pass
 
                 #parse the M block into a full symmetric matrix
-                matrix: Dict = {}
-                row_order: List[str] = []
-                col_order: List[str] = []
-                matrix_rows: List[List] = []
+                matrix: dict = {}
+                row_order: list[str] = []
+                col_order: list[str] = []
+                matrix_rows: list[list] = []
 
                 for m_line in current_dict["M"]:
                     stripped = m_line.strip()
@@ -231,7 +232,7 @@ class _AAIndexMatrix:
                                 UserWarning, stacklevel=2,
                             )
                     else:
-                        row_vals: List = []
+                        row_vals: list = []
                         for token in stripped.split():
                             if token in ("NA", "-"):
                                 row_vals.append(None)
@@ -294,8 +295,14 @@ class _AAIndexMatrix:
                 current_dict = copy.deepcopy(template_dict)
                 continue
 
-            #route non-separator lines to their field bucket
+            #B7: guard against unknown field codes to prevent KeyError
             if line[0] != " ":
+                if line[0] not in current_dict:
+                    warnings.warn(
+                        f"Unknown field code {line[0]!r} in AAindex file; line ignored.",
+                        UserWarning, stacklevel=2,
+                    )
+                    continue
                 current_entry = line[0]
             current_dict[current_entry].append(line[1:].strip())
 
@@ -311,7 +318,7 @@ class _AAIndexMatrix:
 
         return aaindex_json
 
-    def parse_aaindex(self) -> Dict:
+    def parse_aaindex(self) -> dict:
         """Deprecated: use _parse_aaindex() instead.
 
         .. deprecated::
@@ -326,7 +333,7 @@ class _AAIndexMatrix:
         )
         return self._parse_aaindex()
 
-    def get(self, record_code: str, aa1: str, aa2: str) -> Optional[float]:
+    def get(self, record_code: str, aa1: str, aa2: str) -> float | None:
         """Return the pairwise matrix score for two amino acids from a given record.
 
         For symmetric (lower-triangular) records, get(code, aa1, aa2) ==
@@ -358,7 +365,7 @@ class _AAIndexMatrix:
             return matrix[aa1][aa2]
         return None
 
-    def values(self, record_code: str) -> Dict:
+    def values(self, record_code: str) -> dict:
         """Return the full 20x20 matrix dict for a given record.
 
         Shortcut to avoid accessing the whole record when only the matrix is
@@ -375,23 +382,24 @@ class _AAIndexMatrix:
         """
         return self[record_code].matrix
 
-    def search(self, query: Union[str, List[str]]) -> Dict:
+    def search(self, query: str | list[str]) -> dict:
         """Search records by keyword(s) across all text fields.
 
         Searches description, accession code, PMID, references, and notes.
-        Matching is case-insensitive.
+        Matching is case-insensitive. Results are returned sorted by accession
+        number.
 
         Args:
             query: Keyword string or list of keyword strings.
 
         Returns:
-            Dict of matching records keyed by accession number.
-            Returns an empty dict if no records match.
+            Dict of matching records keyed by accession number, sorted
+            alphabetically. Returns an empty dict if no records match.
 
         Raises:
             TypeError: If query is not a str or list.
         """
-        all_indices: Dict = {}
+        all_indices: dict = {}
         if not isinstance(query, (list, str)):
             raise TypeError(
                 f"query must be a list or str, got {type(query)}."
@@ -409,14 +417,15 @@ class _AAIndexMatrix:
                     or term_lower in value["notes"].lower()
                 ):
                     all_indices[index] = value
-        return all_indices
+        #I6: return results sorted by accession code for deterministic ordering
+        return dict(sorted(all_indices.items()))
 
     def search_fuzzy(
         self,
         query: str,
         n: int = 10,
         cutoff: float = 0.0,
-    ) -> Dict:
+    ) -> dict:
         """Search records using fuzzy matching with ranked results.
 
         Scores each record by how closely *query* matches any of its text
@@ -445,7 +454,7 @@ class _AAIndexMatrix:
         if not (0.0 <= cutoff <= 1.0):
             raise ValueError(f"cutoff must be in [0, 1], got {cutoff}.")
         query_lower = query.lower()
-        scored: List[Tuple[float, str]] = []
+        scored: list[tuple[float, str]] = []
         for code, record in self.aaindex_json.items():
             candidate_fields = [
                 record.get("description", ""),
@@ -464,7 +473,7 @@ class _AAIndexMatrix:
         scored.sort(key=lambda x: x[0], reverse=True)
         return {code: self.aaindex_json[code] for _, code in scored[:n]}
 
-    def amino_acids(self) -> List[str]:
+    def amino_acids(self) -> list[str]:
         """Return sorted list of the 20 canonical amino acid single-letter codes.
 
         Derived from the row_order field of the first record in the database.
@@ -478,7 +487,7 @@ class _AAIndexMatrix:
             self._amino_acids_cache = sorted(first_record["row_order"])
         return self._amino_acids_cache
 
-    def record_codes(self) -> List[str]:
+    def record_codes(self) -> list[str]:
         """Return sorted list of all accession numbers in the database.
 
         Returns:
@@ -494,7 +503,7 @@ class _AAIndexMatrix:
         """
         return len(self.aaindex_json)
 
-    def record_names(self) -> List[str]:
+    def record_names(self) -> list[str]:
         """Return a list of description strings for all records.
 
         Returns:
@@ -502,7 +511,7 @@ class _AAIndexMatrix:
         """
         return [v["description"] for v in self.aaindex_json.values()]
 
-    def to_dict(self, record_code: Optional[str] = None) -> Dict:
+    def to_dict(self, record_code: str | None = None) -> dict:
         """Export one record or the full database as a plain Python dict.
 
         Args:
@@ -525,7 +534,7 @@ class _AAIndexMatrix:
             return {code: dict(self.aaindex_json[code])}
         return dict(self.aaindex_json)
 
-    def to_json(self, record_code: Optional[str] = None, indent: int = 4) -> str:
+    def to_json(self, record_code: str | None = None, indent: int = 4) -> str:
         """Serialise one record or the full database to a JSON string.
 
         Args:
@@ -541,7 +550,7 @@ class _AAIndexMatrix:
         """
         return json.dumps(self.to_dict(record_code), indent=indent)
 
-    def to_dataframe(self, record_code: Optional[str] = None) -> Any:
+    def to_dataframe(self, record_code: str | None = None) -> Any:
         """Export pairwise matrix scores as a pandas DataFrame.
 
         Requires ``pandas`` to be installed. If pandas is not available a
@@ -590,6 +599,59 @@ class _AAIndexMatrix:
                 index_tuples.append((code, row_aa))
         multi_index = pd.MultiIndex.from_tuples(index_tuples, names=['record', 'aa'])
         return pd.DataFrame(rows, index=multi_index, columns=col_order)
+
+    def plot_heatmap(self, record_code: str) -> Any:
+        """Plot the pairwise amino acid matrix for a record as a heatmap.
+
+        Requires ``matplotlib`` to be installed. NA values (``None``) in the
+        matrix are rendered as white / masked cells.
+
+        Args:
+            record_code: AAindex accession number.
+
+        Returns:
+            ``matplotlib.axes.Axes`` containing the heatmap. The figure can be
+            displayed with ``plt.show()`` or saved with ``plt.savefig()``.
+
+        Raises:
+            ImportError: If ``matplotlib`` is not installed.
+            ValueError: If *record_code* is not found in the database.
+
+        Example:
+            >>> ax = aaindex2.plot_heatmap('ALTS910101')
+            >>> import matplotlib.pyplot as plt; plt.show()
+        """
+        try:
+            import matplotlib.pyplot as plt  # noqa: PLC0415
+        except ImportError as exc:
+            raise ImportError(
+                "matplotlib is required for plot_heatmap(). "
+                "Install it with: pip install matplotlib"
+            ) from exc
+
+        record = self[record_code]
+        row_order = record['row_order']
+        col_order = record['col_order']
+        matrix = record['matrix']
+
+        #build 2D array; replace None with nan so imshow renders it as masked
+        data = [
+            [
+                math.nan if matrix.get(r, {}).get(c) is None else matrix.get(r, {}).get(c, math.nan)
+                for c in col_order
+            ]
+            for r in row_order
+        ]
+
+        _, ax = plt.subplots()
+        im = ax.imshow(data, aspect='auto')
+        ax.set_xticks(range(len(col_order)))
+        ax.set_yticks(range(len(row_order)))
+        ax.set_xticklabels(col_order)
+        ax.set_yticklabels(row_order)
+        plt.colorbar(im, ax=ax)
+        ax.set_title(record['description'][:80])
+        return ax
 
     def __getitem__(self, record_code: str) -> "Map":
         """Return a record by accession number wrapped in a Map (dot-notation dict).
@@ -650,14 +712,14 @@ class _AAIndexMatrix:
 ######################          Getters & Setters          ######################
 
     @property
-    def aaindex_json(self) -> Dict:
+    def aaindex_json(self) -> dict:
         """Parsed database dict, loaded lazily on first access."""
         if self._aaindex_json is None:
             self._load_data()
         return self._aaindex_json
 
     @aaindex_json.setter
-    def aaindex_json(self, value: Dict) -> None:
+    def aaindex_json(self, value: dict) -> None:
         self._aaindex_json = value
 
     @property

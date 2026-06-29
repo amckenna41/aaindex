@@ -25,7 +25,7 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -102,17 +102,17 @@ jobs:
         timeout-minutes: 5
         continue-on-error: true
 
-      # Cross-check installed version against source version
+      # Cross-check installed version against source (pyproject.toml) version
       - name: Verify package version
         run: |
           INSTALLED_VERSION=$(pip show aaindex | grep Version | cut -d ' ' -f 2)
-          SOURCE_VERSION=$(python -c "import aaindex; print(aaindex.__version__)" 2>/dev/null || echo "unknown")
+          SOURCE_VERSION=$(python -c "import tomllib; data=tomllib.loads(open('pyproject.toml').read()); print(data['project']['version'])" 2>/dev/null || echo "unknown")
           echo "Installed version: $INSTALLED_VERSION"
           echo "Source version: $SOURCE_VERSION"
           if [ "$INSTALLED_VERSION" != "$SOURCE_VERSION" ]; then
             echo "Warning: Version mismatch detected"
             echo "Installed: $INSTALLED_VERSION"
-            echo "Source: $SOURCE_VERSION"
+            echo "Source (pyproject.toml): $SOURCE_VERSION"
           fi
         continue-on-error: true
 

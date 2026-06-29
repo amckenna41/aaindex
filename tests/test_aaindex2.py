@@ -508,6 +508,38 @@ class AAIndex2_Tests(unittest.TestCase):
                         f'correlation_coefficients[{k!r}] in {code} should be float, got {type(val)}.')
                 break
 
+    def test_search_sorted(self):
+        """ Test that search() returns results sorted alphabetically by accession code. """
+        results = aaindex2.search('substitution')
+        keys = list(results.keys())
+        self.assertEqual(keys, sorted(keys),
+            'search() results should be sorted alphabetically by accession code.')
+
+    def test_plot_heatmap(self):
+        """ Test Case for plot_heatmap(), which plots a 20x20 matrix as a heatmap.
+        Skipped when matplotlib is not installed. """
+        try:
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+        except ImportError:
+            self.skipTest('matplotlib not installed — skipping test_plot_heatmap.')
+        code = 'ALTS910101'
+#1.) returns a matplotlib Axes object
+        ax = aaindex2.plot_heatmap(code)
+        self.assertIsNotNone(ax,
+            'plot_heatmap() should return an Axes object.')
+        self.assertEqual(ax.__class__.__name__, 'Axes',
+            f'plot_heatmap() should return Axes, got {type(ax)}.')
+#2.) title contains the record description
+        record = aaindex2[code]
+        self.assertTrue(ax.get_title().startswith(record['description'][:20]),
+            'plot_heatmap() title should start with the record description.')
+#3.) invalid record code raises ValueError
+        with self.assertRaises(ValueError):
+            aaindex2.plot_heatmap('BLAH999999')
+        plt.close('all')
+
 if __name__ == '__main__':
     #run all unit tests
     unittest.main(verbosity=2)

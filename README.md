@@ -3,6 +3,7 @@
   <img src="https://raw.githubusercontent.com/amckenna41/aaindex/main/images/aaindex_logo.png" height="400" />
 </p>
 
+[![Vercel App](https://img.shields.io/badge/app-aaindex.vercel.app-black?logo=vercel)](https://aaindex.vercel.app/)
 [![AAindex](https://img.shields.io/pypi/v/aaindex)](https://pypi.org/project/aaindex/)
 [![pytest](https://github.com/amckenna41/aaindex/workflows/Building%20and%20Testing/badge.svg)](https://github.com/amckenna41/aaindex/actions?query=workflowBuilding%20and%20Testing)
 [![PythonV](https://img.shields.io/pypi/pyversions/aaindex?logo=2)](https://pypi.org/project/aaindex/)

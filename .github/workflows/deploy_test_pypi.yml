@@ -25,7 +25,7 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -89,7 +89,7 @@ jobs:
       - name: Install and verify from TestPyPI
         run: |
           echo "Installing aaindex from TestPyPI..."
-          pip install -i https://test.pypi.org/simple/ aaindex --upgrade --index-url https://test.pypi.org/simple/
+          pip install aaindex --upgrade --index-url https://test.pypi.org/simple/
           echo "Verifying installation..."
           python -c "import aaindex; print(f'aaindex {aaindex.__version__} installed successfully')"
         timeout-minutes: 5

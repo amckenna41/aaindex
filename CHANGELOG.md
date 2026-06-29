@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1]
+
+### Added
+- `AAIndex1.multi_encode(sequence, record_codes, gap_value=0.0, unknown_value=None)` — encode a single protein sequence against multiple AAindex1 records in one call. Returns a dict mapping each accession number to its encoded vector. Avoids repeated record lookups and is the recommended approach for multi-index feature extraction in ML pipelines.
+- `AAIndex1.encode()` and `AAIndex1.batch_encode()` — new `unknown_value` parameter (default `None`). Non-canonical amino acids (e.g. `B`, `X`, `Z`) are now distinguishable from canonical AAs with NA source data: NA-valued canonical AAs remain `None`; non-canonical AAs receive `unknown_value`.
+- `AAIndex1.to_dataframe()` — new `include_gap` parameter (default `True`). Set `include_gap=False` to drop the `'-'` gap-placeholder column, producing a clean 20-column DataFrame suitable for ML pipelines.
+- `AAIndex1.plot_distribution(record_code)` — bar chart of amino acid values for a given AAindex1 record. Requires `matplotlib`; raises `ImportError` with install instructions if absent. Returns the `matplotlib.axes.Axes` object for further customisation.
+- `_AAIndexMatrix.plot_heatmap(record_code)` — 20×20 heatmap of the pairwise matrix for a given AAindex2 or AAindex3 record. NA values are rendered as masked (white) cells. Requires `matplotlib`. Returns the `Axes` object.
+
+### Fixed
+- `AAIndex1.get_all_categories(category_file)` — the `category_file` parameter was previously accepted but silently ignored; it is now forwarded to `_parse_categories()`. Default changed from `"aaindex_categories.txt"` to `"aaindex_to_category.txt"` to match `_parse_categories()` and preserve existing behaviour.
+- `_parse_aaindex()` on all three classes — added guard against unknown field codes. Previously, a line starting with an unrecognised character would raise `KeyError` when the parser tried to append to an unknown bucket. Such lines now emit a `UserWarning` and are skipped gracefully.
+- Test expected value dicts for the gap placeholder `'-'` corrected from `int` `0` to `float` `0.0`. While `0 == 0.0` in Python, the fixtures are now type-consistent with `test_gap_placeholder_is_float` and the actual stored value.
+- `deploy_test_pypi.yml` — removed duplicate `--index-url` / `-i` flags in the TestPyPI install-and-verify step.
+- `deploy_pypi.yml` — the "Verify package version" step now reads `SOURCE_VERSION` from `pyproject.toml` via `tomllib` (Python 3.11+ stdlib) instead of importing the just-installed PyPI package. This makes the comparison meaningful: local source version vs. what was installed from PyPI.
+
+### Changed
+- `search()` on all three database classes now returns results **sorted alphabetically by accession code** instead of in database insertion order. This makes the output deterministic and reproducible across Python versions.
+- Type annotations modernised to Python 3.10+ union syntax throughout `aaindex1.py` and `_aaindex_matrix.py`: `Optional[X]` → `X | None`, `List[X]` → `list[X]`, `Dict` → `dict`, `Union[X, Y]` → `X | Y`. The `from typing import` block is reduced to only `Any` and `Iterator`.
+- `pyproject.toml` — `[tool.ruff] target-version` corrected from `"py38"` to `"py310"` to match `requires-python = ">=3.10"`. Ruff will now correctly apply Python 3.10+ lint and upgrade rules.
+
 ## [1.3.0]
 
 ### Added
@@ -167,7 +188,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial `README.md` with usage examples and database description.
 - GitHub Actions workflow for automated build and test.
 
-[Unreleased]: https://github.com/amckenna41/aaindex/compare/v1.3.0...HEAD
+[1.3.1]: https://github.com/amckenna41/aaindex/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/amckenna41/aaindex/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/amckenna41/aaindex/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/amckenna41/aaindex/compare/v1.1.2...v1.2.0

@@ -13,11 +13,11 @@ import re
 import csv
 import warnings
 from importlib.metadata import version as _pkg_version, PackageNotFoundError
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Iterator
 
 from ._aaindex_matrix import Map
 
-__all__: List[str] = ['AAIndex1', 'aaindex1']
+__all__: list[str] = ['AAIndex1', 'aaindex1']
 
 
 class AAIndex1():
@@ -44,9 +44,9 @@ class AAIndex1():
         #date as shown on https://www.genome.jp/aaindex/
         self.last_updated = "February 13, 2017"
         #database and categories are loaded lazily on first access
-        self._aaindex_json: Optional[Dict] = None
-        self._categories: Optional[Dict] = None
-        self._amino_acids_cache: Optional[List[str]] = None
+        self._aaindex_json: dict | None = None
+        self._categories: dict | None = None
+        self._amino_acids_cache: list[str] | None = None
         try:
             self.version = _pkg_version("aaindex")
         except PackageNotFoundError:
@@ -76,7 +76,7 @@ class AAIndex1():
             self._aaindex_json[next(iter(self._aaindex_json))]["values"].keys()
         )
 
-    def _parse_aaindex(self) -> Dict:
+    def _parse_aaindex(self) -> dict:
         """Parse the raw AAindex1 database file into a nested dict and cache as JSON.
 
         Each record is keyed by its accession number and stores metadata, amino
@@ -107,7 +107,7 @@ class AAIndex1():
         #regex to normalise double-quote characters in field values
         clean_up_pattern = re.compile("\"")
 
-        aaindex_json: Dict = {}
+        aaindex_json: dict = {}
         current_dict = copy.deepcopy(template_dict)
         current_entry: str = "H"  # first non-space line in any block is always H
 
@@ -161,7 +161,7 @@ class AAIndex1():
                 row_0_values = aa_lines[1].split()
                 row_1_values = aa_lines[2].split()
 
-                values: Dict = {}
+                values: dict = {}
                 for i in range(len(row_0_values)):
                     try:
                         values[row_0_names[i]] = float(row_0_values[i])
@@ -188,7 +188,14 @@ class AAIndex1():
                 current_dict = copy.deepcopy(template_dict)
                 continue
 
+            #B7: guard against unknown field codes to prevent KeyError
             if line[0] != " ":
+                if line[0] not in current_dict:
+                    warnings.warn(
+                        f"Unknown field code {line[0]!r} in AAindex1 file; line ignored.",
+                        UserWarning, stacklevel=2,
+                    )
+                    continue
                 current_entry = line[0]
 
             current_dict[current_entry].append(line[1:].strip())
@@ -210,7 +217,7 @@ class AAIndex1():
 
         return aaindex_json
 
-    def parse_aaindex(self) -> Dict:
+    def parse_aaindex(self) -> dict:
         """Deprecated: use _parse_aaindex() instead.
 
         .. deprecated::
@@ -225,7 +232,7 @@ class AAIndex1():
         )
         return self._parse_aaindex()
 
-    def _parse_categories(self, aaindex_category_file: str = 'aaindex_to_category.txt') -> Dict:
+    def _parse_categories(self, aaindex_category_file: str = 'aaindex_to_category.txt') -> dict:
         """Parse category file mapping each AAi record to one of 8 categories.
 
         Category file and parsing code inspired from https://github.com/harmslab/hops.
@@ -266,7 +273,7 @@ class AAIndex1():
             raise OSError(f"Error opening AAindex1 category file: {category_filepath}.") from e
 
         #B7 fix: filter comment lines in memory — no intermediate file write needed
-        aaindex_category: Dict = {}
+        aaindex_category: dict = {}
         reader = csv.reader(
             (line for line in category_lines if not line.startswith('#')),
             delimiter="\t",
@@ -278,7 +285,7 @@ class AAIndex1():
 
         return aaindex_category
 
-    def parse_categories(self, aaindex_category_file: str = 'aaindex_to_category.txt') -> Dict:
+    def parse_categories(self, aaindex_category_file: str = 'aaindex_to_category.txt') -> dict:
         """Deprecated: use _parse_categories() instead.
 
         .. deprecated::
@@ -293,35 +300,38 @@ class AAIndex1():
         )
         return self._parse_categories(aaindex_category_file)
 
-    def get_all_categories(self, category_file: str = "aaindex_categories.txt") -> Dict:
+    def get_all_categories(self, category_file: str = "aaindex_to_category.txt") -> dict:
         """Return dict mapping every record code to its category.
 
-        Delegates to :meth:`_parse_categories` which parses the source category
-        file in memory. The *category_file* parameter is retained for API
-        compatibility but is no longer used.
+        Delegates to :meth:`_parse_categories`.
+
+        Args:
+            category_file: Bare filename or absolute path of the category mapping
+                file. Defaults to ``aaindex_to_category.txt`` in the data directory.
 
         Returns:
             Dict mapping each record code to its category string.
         """
-        return self._parse_categories()
+        return self._parse_categories(category_file)
 
-    def search(self, query: Union[str, List[str]]) -> Dict:
+    def search(self, query: str | list[str]) -> dict:
         """Search records by keyword(s) across all text fields.
 
         Searches the description, accession code, PMID, references, and notes
-        fields of each record. Matching is case-insensitive.
+        fields of each record. Matching is case-insensitive. Results are returned
+        sorted by accession number.
 
         Args:
             query: Keyword string or list of keyword strings.
 
         Returns:
-            Dict of matching records keyed by accession number.
-            Returns an empty dict if no records match.
+            Dict of matching records keyed by accession number, sorted
+            alphabetically. Returns an empty dict if no records match.
 
         Raises:
             TypeError: If query is not a str or list.
         """
-        all_indices: Dict = {}
+        all_indices: dict = {}
 
         if not isinstance(query, (list, str)):
             raise TypeError(f"Input query parameter must be a list or str, got {type(query)}.")
@@ -343,14 +353,15 @@ class AAIndex1():
                 ):
                     all_indices[index] = record
 
-        return all_indices
+        #I6: return results sorted by accession code for deterministic ordering
+        return dict(sorted(all_indices.items()))
 
     def search_fuzzy(
         self,
         query: str,
         n: int = 10,
         cutoff: float = 0.0,
-    ) -> Dict:
+    ) -> dict:
         """Search records using fuzzy matching with ranked results.
 
         Scores each record by how closely *query* matches any of its text
@@ -379,7 +390,7 @@ class AAIndex1():
         if not (0.0 <= cutoff <= 1.0):
             raise ValueError(f"cutoff must be in [0, 1], got {cutoff}.")
         query_lower = query.lower()
-        scored: List[Tuple[float, str]] = []
+        scored: list[tuple[float, str]] = []
         for code, record in self.aaindex_json.items():
             candidate_fields = [
                 record.get("description", ""),
@@ -399,7 +410,7 @@ class AAIndex1():
         scored.sort(key=lambda x: x[0], reverse=True)
         return {code: self.aaindex_json[code] for _, code in scored[:n]}
 
-    def amino_acids(self) -> List[str]:
+    def amino_acids(self) -> list[str]:
         """Return sorted list of amino acid single-letter codes.
 
         Includes the ``-`` placeholder for absent/gap amino acids.
@@ -411,7 +422,7 @@ class AAIndex1():
         _ = self.aaindex_json
         return self._amino_acids_cache
 
-    def record_codes(self) -> List[str]:
+    def record_codes(self) -> list[str]:
         """Return sorted list of all accession numbers in the database.
 
         Returns:
@@ -429,7 +440,7 @@ class AAIndex1():
         """
         return len(self.aaindex_json)
 
-    def record_names(self) -> List[str]:
+    def record_names(self) -> list[str]:
         """Return a list of description strings for all records.
 
         Returns:
@@ -437,7 +448,7 @@ class AAIndex1():
         """
         return [v['description'] for v in self.aaindex_json.values()]
 
-    def values(self, record_code: str) -> Dict:
+    def values(self, record_code: str) -> dict:
         """Return the amino acid values dict for a given record.
 
         Shortcut to avoid accessing the full record when only
@@ -454,7 +465,7 @@ class AAIndex1():
         """
         return self[record_code]['values']
 
-    def valid_categories(self) -> List[str]:
+    def valid_categories(self) -> list[str]:
         """Return a sorted list of all distinct category strings in the database.
 
         Returns:
@@ -462,7 +473,7 @@ class AAIndex1():
         """
         return sorted({record['category'] for record in self.aaindex_json.values()})
 
-    def get_record_by_category(self, category: str) -> Dict:
+    def get_record_by_category(self, category: str) -> dict:
         """Return all records belonging to a given category.
 
         Args:
@@ -496,21 +507,31 @@ class AAIndex1():
         }
         return category_records
 
-    def encode(self, sequence: str, record_code: str, gap_value: float = 0.0) -> List[Optional[float]]:
+    def encode(
+        self,
+        sequence: str,
+        record_code: str,
+        gap_value: float = 0.0,
+        unknown_value: float | None = None,
+    ) -> list[float | None]:
         """Encode a protein sequence as a numeric feature vector using one index.
 
         Each amino acid in *sequence* is replaced by its corresponding value
         from the named AAindex1 record. Gaps (``-``) are replaced by
-        *gap_value*. Amino acids with an NA value in the source data are
-        represented as ``None``.
+        *gap_value*. Amino acids whose value is NA in the source data are
+        represented as ``None``. Amino acids not in the 20 canonical set are
+        represented as *unknown_value* (default ``None``).
 
         Args:
             sequence: Protein sequence string of single-letter amino acid codes.
-                      Case-insensitive; non-standard characters are allowed
-                      and map to ``None``.
+                      Case-insensitive.
             record_code: AAindex1 accession number.
             gap_value: Numeric value substituted for gap characters (``-``).
                        Defaults to ``0.0``.
+            unknown_value: Value substituted for non-canonical amino acid
+                           characters (e.g. ``B``, ``X``, ``Z``). Defaults to
+                           ``None``. Set to a float (e.g. ``0.0``) to fill
+                           unknowns with a fixed value instead.
 
         Returns:
             List of floats (or ``None``) with the same length as *sequence*.
@@ -526,20 +547,23 @@ class AAIndex1():
         if not isinstance(sequence, str):
             raise TypeError(f"sequence must be a str, got {type(sequence)}.")
         values = self[record_code]['values']
-        result: List[Optional[float]] = []
+        result: list[float | None] = []
         for aa in sequence.upper():
             if aa == '-':
                 result.append(gap_value)
+            elif aa in values:
+                result.append(values[aa])  # None if NA value in source data
             else:
-                result.append(values.get(aa))
+                result.append(unknown_value)  # non-canonical amino acid
         return result
 
     def batch_encode(
         self,
-        sequences: List[str],
+        sequences: list[str],
         record_code: str,
         gap_value: float = 0.0,
-    ) -> List[List[Optional[float]]]:
+        unknown_value: float | None = None,
+    ) -> list[list[float | None]]:
         """Encode multiple protein sequences as numeric feature vectors using one index.
 
         Convenience wrapper around :meth:`encode` for processing a collection of
@@ -549,11 +573,12 @@ class AAIndex1():
 
         Args:
             sequences: List of protein sequence strings of single-letter amino
-                       acid codes. Case-insensitive; non-standard characters map
-                       to ``None``.
+                       acid codes. Case-insensitive.
             record_code: AAindex1 accession number.
             gap_value: Numeric value substituted for gap characters (``-``).
                        Defaults to ``0.0``.
+            unknown_value: Value substituted for non-canonical amino acid
+                           characters. Defaults to ``None``.
 
         Returns:
             List of encoded sequences; each inner list has the same length as the
@@ -570,25 +595,73 @@ class AAIndex1():
         if not isinstance(sequences, list):
             raise TypeError(f"sequences must be a list, got {type(sequences)}.")
         values = self[record_code]['values']
-        result: List[List[Optional[float]]] = []
+        result: list[list[float | None]] = []
         for i, seq in enumerate(sequences):
             if not isinstance(seq, str):
                 raise TypeError(f"sequences[{i}] must be a str, got {type(seq)}.")
-            encoded: List[Optional[float]] = []
+            encoded: list[float | None] = []
             for aa in seq.upper():
                 if aa == '-':
                     encoded.append(gap_value)
+                elif aa in values:
+                    encoded.append(values[aa])
                 else:
-                    encoded.append(values.get(aa))
+                    encoded.append(unknown_value)
             result.append(encoded)
         return result
+
+    def multi_encode(
+        self,
+        sequence: str,
+        record_codes: list[str],
+        gap_value: float = 0.0,
+        unknown_value: float | None = None,
+    ) -> dict[str, list[float | None]]:
+        """Encode a protein sequence against multiple AAindex1 records at once.
+
+        Encodes *sequence* using each record in *record_codes* and returns a
+        dict mapping each accession number to its encoded vector. Each record is
+        validated before encoding begins, so an invalid code raises immediately.
+
+        A common use case is ML feature extraction, where a sequence must be
+        represented as a matrix of physicochemical descriptors.
+
+        Args:
+            sequence: Protein sequence string of single-letter amino acid codes.
+                      Case-insensitive.
+            record_codes: List of AAindex1 accession numbers.
+            gap_value: Numeric value substituted for gap characters (``-``).
+                       Defaults to ``0.0``.
+            unknown_value: Value substituted for non-canonical amino acid
+                           characters. Defaults to ``None``.
+
+        Returns:
+            Dict mapping each accession number to its encoded vector (a list of
+            floats or ``None`` with the same length as *sequence*).
+
+        Raises:
+            TypeError: If *sequence* is not a str or *record_codes* is not a list.
+            ValueError: If any accession number in *record_codes* is not found.
+
+        Example:
+            >>> aaindex1.multi_encode('ACDE', ['KYTJ820101', 'EISD840101'])
+            {'KYTJ820101': [1.8, 2.5, -3.5, -3.5], 'EISD840101': [...]}
+        """
+        if not isinstance(sequence, str):
+            raise TypeError(f"sequence must be a str, got {type(sequence)}.")
+        if not isinstance(record_codes, list):
+            raise TypeError(f"record_codes must be a list, got {type(record_codes)}.")
+        return {
+            code: self.encode(sequence, code, gap_value, unknown_value)
+            for code in record_codes
+        }
 
     def get_correlated_indices(
         self,
         record_code: str,
         min_correlation: float = 0.8,
         depth: int = 1,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Return a dict of indices correlated with *record_code*.
 
         Traverses the ``correlation_coefficients`` links stored on each record
@@ -617,7 +690,7 @@ class AAIndex1():
 
         Example:
             >>> aaindex1.get_correlated_indices('KYTJ820101', depth=1)
-            {'EISD840101': '0.949', ...}
+            {'EISD840101': 0.949, ...}
         """
         if not isinstance(min_correlation, (int, float)):
             raise TypeError(f"min_correlation must be a float, got {type(min_correlation)}.")
@@ -631,7 +704,7 @@ class AAIndex1():
         #validate seed — __getitem__ raises ValueError if not found
         self[record_code]
 
-        visited: Dict[str, float] = {}
+        visited: dict[str, float] = {}
         frontier = {record_code.strip().upper()}
 
         for _ in range(depth):
@@ -658,7 +731,7 @@ class AAIndex1():
         self,
         code1: str,
         code2: str,
-    ) -> Optional[float]:
+    ) -> float | None:
         """Compute the Pearson correlation coefficient between two AAindex1 records.
 
         Uses only the amino acids that have a non-``None`` value in *both*
@@ -709,7 +782,7 @@ class AAIndex1():
 
         return cov / (std_x * std_y)
 
-    def to_dict(self, record_code: Optional[str] = None) -> Dict:
+    def to_dict(self, record_code: str | None = None) -> dict:
         """Export one record or the full database as a plain Python dict.
 
         Args:
@@ -730,7 +803,7 @@ class AAIndex1():
             return {code: dict(self.aaindex_json[code])}
         return dict(self.aaindex_json)
 
-    def to_json(self, record_code: Optional[str] = None, indent: int = 4) -> str:
+    def to_json(self, record_code: str | None = None, indent: int = 4) -> str:
         """Serialise one record or the full database to a JSON string.
 
         Args:
@@ -746,7 +819,11 @@ class AAIndex1():
         """
         return json.dumps(self.to_dict(record_code), indent=indent)
 
-    def to_dataframe(self, record_code: Optional[str] = None) -> Any:
+    def to_dataframe(
+        self,
+        record_code: str | None = None,
+        include_gap: bool = True,
+    ) -> Any:
         """Export amino acid values as a pandas DataFrame.
 
         Requires ``pandas`` to be installed. If pandas is not available a
@@ -760,6 +837,9 @@ class AAIndex1():
         Args:
             record_code: If given, export only that record's values.
                          If ``None`` (default), export all records.
+            include_gap: If ``True`` (default), include the ``-`` gap-placeholder
+                         column. Set to ``False`` to drop it, which is useful for
+                         ML pipelines that expect exactly 20 amino acid columns.
 
         Returns:
             ``pandas.DataFrame`` with amino acids as columns and record
@@ -785,7 +865,55 @@ class AAIndex1():
                 code: record['values'] for code, record in self.aaindex_json.items()
             }
 
-        return pd.DataFrame.from_dict(records_subset, orient='index')
+        df = pd.DataFrame.from_dict(records_subset, orient='index')
+        if not include_gap:
+            df = df.drop(columns=['-'], errors='ignore')
+        return df
+
+    def plot_distribution(self, record_code: str) -> Any:
+        """Plot the amino acid value distribution for a record as a bar chart.
+
+        Requires ``matplotlib`` to be installed. Amino acids with NA values
+        (``None``) are excluded from the plot. The gap placeholder ``-`` is
+        always excluded.
+
+        Args:
+            record_code: AAindex1 accession number.
+
+        Returns:
+            ``matplotlib.axes.Axes`` containing the bar chart. The figure can
+            be displayed with ``plt.show()`` or saved with ``plt.savefig()``.
+
+        Raises:
+            ImportError: If ``matplotlib`` is not installed.
+            ValueError: If *record_code* is not found in the database.
+
+        Example:
+            >>> ax = aaindex1.plot_distribution('KYTJ820101')
+            >>> import matplotlib.pyplot as plt; plt.show()
+        """
+        try:
+            import matplotlib.pyplot as plt  # noqa: PLC0415
+        except ImportError as exc:
+            raise ImportError(
+                "matplotlib is required for plot_distribution(). "
+                "Install it with: pip install matplotlib"
+            ) from exc
+
+        record = self[record_code]
+        vals = {
+            aa: v for aa, v in record['values'].items()
+            if aa != '-' and v is not None
+        }
+        labels = sorted(vals)
+        heights = [vals[aa] for aa in labels]
+
+        _, ax = plt.subplots()
+        ax.bar(labels, heights)
+        ax.set_xlabel("Amino Acid")
+        ax.set_ylabel("Value")
+        ax.set_title(record['description'][:80])
+        return ax
 
     def __getitem__(self, record_code: str) -> "Map":
         """Return a record by accession number wrapped in a Map (dot-notation dict).
@@ -842,24 +970,24 @@ class AAIndex1():
 ######################          Getters & Setters          ######################
 
     @property
-    def aaindex_json(self) -> Dict:
+    def aaindex_json(self) -> dict:
         """Parsed database dict, loaded lazily on first access."""
         if self._aaindex_json is None:
             self._load_data()
         return self._aaindex_json
 
     @aaindex_json.setter
-    def aaindex_json(self, value: Dict) -> None:
+    def aaindex_json(self, value: dict) -> None:
         self._aaindex_json = value
 
     @property
-    def categories(self) -> Dict:
+    def categories(self) -> dict:
         if self._categories is None:
             self._categories = self.get_all_categories()
         return self._categories
 
     @categories.setter
-    def categories(self, value: Dict) -> None:
+    def categories(self, value: dict) -> None:
         self._categories = value
 
     @property
