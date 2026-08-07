@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2]
+
+### Fixed
+- **AAindex2 record `DOSZ010101` was parsed into an empty matrix.** The upstream source file has a typo in its matrix header (`M rows = ... , cols rows = ...` instead of `cols =`). The parser read the rows/cols amino acid strings by token position, so `'='` was taken as the entire column order and the record collapsed from 22×20 to 22×1 — every `aaindex2.get('DOSZ010101', x, y)` returned `None` and the record was wrongly flagged `is_symmetric=True`. The header is now matched by field name, restoring all 440 values and the correct `is_symmetric=False`.
+- **Record accessors leaked references into the loaded database.** `__getitem__`, `to_dict()`, `values()`, `search()`, `search_fuzzy()`, `get_record_by_category()` and `amino_acids()` returned live objects rather than copies — `Map` only copies top-level keys, so `aaindex1['KYTJ820101']['values']['A'] = 999` silently changed the value seen by every subsequent caller in the process. All of these now return deep copies. `_AAIndexMatrix.get()` reads the live matrix directly (it returns an immutable float) so the pairwise-lookup hot path is unaffected.
+- **A truncated JSON cache permanently broke the package.** The cache was written non-atomically, so an interrupted or concurrent first run could leave partial JSON behind; `_load_data()` then raised `JSONDecodeError` on every subsequent import with no way to recover short of deleting the file by hand. Cache writes now go through a temp file plus `os.replace()`, and an unreadable cache falls back to parsing the raw database with a `UserWarning`.
+- **A malformed I-block raised `IndexError` instead of warning.** `AAIndex1._parse_aaindex()` iterated over the first value row while indexing the second, so a record with mismatched row lengths crashed the whole parse. Row lengths are now reconciled, the record is parsed as far as it is valid, and a `UserWarning` reports the mismatch — matching the warn-and-skip behaviour already used for other malformed records.
+- **A record missing from the category file aborted the entire parse** with `KeyError`. The category file is maintained separately from the AAindex databases and lags behind new releases; uncategorised records now receive category `'unknown'` and emit a `UserWarning`.
+- **`code in db` disagreed with `db[code]`.** `__contains__` did not normalise case or surrounding whitespace, so `'kytj820101' in aaindex1` was `False` even though `aaindex1['kytj820101']` resolved correctly. Both now normalise identically; non-string operands return `False` rather than raising.
+- Blank lines in a raw database file no longer emit a spurious `Unknown field code '\n'` warning, and a file with no trailing newline no longer raises `IndexError`.
+- `AAIndex1.search()` now also matches against the `category` field, consistent with `search_fuzzy()`.
+- `deploy_pypi.yml` / `deploy_test_pypi.yml` — the `workflow_run` trigger filtered on branch name only, and `workflow_run.branches` matches the *head* branch, which a fork PR controls. A pull request from a fork branch named `main` could therefore start the release chain. Both jobs now additionally require the triggering run to originate from this repository. The triggering workflow's name is also passed through `env:` rather than interpolated directly into `run:`.
+
+### Changed
+- **CI was silently skipping 6 tests on every Python version.** The `build_test.yml` install step ran `pip install pytest pytest-cov` and referenced a `requirements.txt` that does not exist, so neither `pandas` nor `matplotlib` was ever present — every `to_dataframe()` and `plot_*()` test skipped and a green build proved nothing about those paths. `pandas` and `matplotlib` are now part of the `[test]` extra (the package itself still has **no runtime dependencies**), CI installs `-e ".[test]"`, and pytest runs with `-rs` so any future skip is visible in the log. The pip cache key now hashes `pyproject.toml` rather than the non-existent `requirements*.txt`. Full suite: 103 passed, 0 skipped.
+- The parsed `aaindex2.json` and `aaindex3.json` caches are now committed alongside `aaindex1.json` instead of being gitignored. Previously only `aaindex1.json` was tracked, so a build from a clean checkout shipped one cache and left the other two to be parsed at import time and written into `site-packages` — which silently fails on read-only installs, and made build contents depend on untracked local files. `tests/test_data_cache.py` fails if any cache drifts from its raw database.
+- Removed `aaindex/data/aaindex_categories.txt` (52 KB). It was byte-identical to the comment-stripped `aaindex_to_category.txt` and became a dead artifact in v1.3.0 when `_parse_categories()` stopped writing an intermediate file. Passing it explicitly to `get_all_categories()` now raises `OSError`; pass `aaindex_to_category.txt` (the default) instead.
+- `README.md` — the AAindex2 record counts were wrong: the section claimed "66 matrices: 47 symmetric and 19 non-symmetric" against an actual 94 records. Corrected to 94 matrices, 67 symmetric and 27 non-symmetric (the `DOSZ010101` fix above moves one record from the symmetric to the non-symmetric count). `tests/test_regressions.py` now pins these figures so the documentation cannot drift from the parser again.
+- `docs/source/changelog.rst` was still headed "Latest: v1.3.0" and had no v1.3.1 entry at all; it now covers v1.3.2 and v1.3.1.
+- The version assertion in `test_aaindex_metadata` was commented out with a hardcoded `"1.3.1"`. It is live again and reads the expected value from `pyproject.toml`, so it cannot go stale at the next release.
+
 ## [1.3.1]
 
 ### Added
@@ -188,10 +209,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial `README.md` with usage examples and database description.
 - GitHub Actions workflow for automated build and test.
 
+[1.3.2]: https://github.com/amckenna41/aaindex/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/amckenna41/aaindex/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/amckenna41/aaindex/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/amckenna41/aaindex/compare/v1.1.2...v1.2.0
-[1.1.2]: https://github.com/amckenna41/aaindex/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/amckenna41/aaindex/compare/v1.1.0...v1.1.2
 [1.1.0]: https://github.com/amckenna41/aaindex/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/amckenna41/aaindex/compare/v0.0.1...v1.0.0

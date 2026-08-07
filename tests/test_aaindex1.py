@@ -2,6 +2,8 @@
 ################             AAindex1 Module Tests             #################
 ################################################################################
 
+import os
+import re
 import unittest
 from unittest.mock import patch
 from importlib.metadata import metadata
@@ -48,9 +50,20 @@ class AAIndex1_Tests(unittest.TestCase):
     """
     def test_aaindex_metadata(self):
         """ Testing correct aaindex version and metadata. """
-        # self.assertEqual(__version__, "1.3.1",
-        #     f"aaindex version is not correct, got: {metadata('aaindex')['version']}.")
-        self.assertEqual(metadata("aaindex")['name'], "aaindex", 
+        #assert __version__ against pyproject.toml rather than a hardcoded string, so the
+        #check cannot go stale on the next release the way the previous literal did
+        pyproject = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'pyproject.toml')
+        #tomllib is 3.11+ only and this package supports 3.10, so match the line directly —
+        #'^version' does not match '[tool.ruff] target-version', so there is exactly one hit
+        if os.path.isfile(pyproject):
+            with open(pyproject) as f:
+                match = re.search(r'^version\s*=\s*["\'](.+?)["\']', f.read(), re.MULTILINE)
+            self.assertIsNotNone(match, 'Could not read project version from pyproject.toml.')
+            self.assertEqual(__version__, match.group(1),
+                f"__version__ ({__version__}) does not match pyproject.toml ({match.group(1)}). "
+                f"If this fails after a version bump, reinstall the package.")
+        self.assertEqual(metadata("aaindex")['name'], "aaindex",
             f"aaindex software name is not correct, got: {metadata('aaindex')['name']}.")
         self.assertEqual(metadata("aaindex")['author-email'], "AJ McKenna <amckenna41@qub.ac.uk>", 
             f"aaindex author-email is not correct, got: {metadata('aaindex')['author-email']}.")

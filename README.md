@@ -70,7 +70,7 @@ The AAindex1 section currently contains 566 amino acid indices representing the 
 
 **AAindex2:**
 
-The AAindex2 section currently contains 66 amino acid mutation matrices: 47 symmetric matrices and 19 non-symmetric matrices. The format of the entry is almost the same as that of AAindex1 except that it contains 210 numerical values (20 diagonal and 20 × 19/2 off-diagonal elements) for a symmetric matrix and 400 or more numerical values for a non-symmetric matrix (some matrices include a gap or distinguish two states of cysteine). An example of the format of an AAindex2 record can be seen within the [aaindex](https://github.com/amckenna41/aaindex/tree/main/aaindex) folder.
+The AAindex2 section currently contains 94 amino acid mutation matrices: 67 symmetric matrices and 27 non-symmetric matrices. The format of the entry is almost the same as that of AAindex1 except that it contains 210 numerical values (20 diagonal and 20 × 19/2 off-diagonal elements) for a symmetric matrix and 400 or more numerical values for a non-symmetric matrix (some matrices include a gap or distinguish two states of cysteine). An example of the format of an AAindex2 record can be seen within the [aaindex](https://github.com/amckenna41/aaindex/tree/main/aaindex) folder.
 
 **AAindex3:**
 
@@ -284,10 +284,16 @@ aaindex2.to_dataframe('ALTS910101')  # 20×20 DataFrame
 aaindex2.to_dataframe()              # MultiIndex DataFrame (record, row_aa)
 ```
 
+> **Note:** every accessor that returns record data — `aaindex1['KYTJ820101']`, `to_dict()`,
+> `values()`, `search()`, `search_fuzzy()`, `get_record_by_category()` and `amino_acids()` —
+> returns a **copy**. Mutating the result is safe and does not affect the loaded database
+> or what any later call returns.
+
 ### Built-in protocol support
 ```python
-# Check membership
+# Check membership — case-insensitive and whitespace-tolerant, matching aaindex1[...]
 'CHOP780206' in aaindex1   # True
+'chop780206' in aaindex1   # True
 
 # Get total number of records
 len(aaindex1)              # 566

@@ -158,8 +158,9 @@ All three classes support Python container protocols:
    # Length
    len(aaindex1)            # 566
 
-   # Membership testing
+   # Membership testing — case-insensitive and whitespace-tolerant, matching aaindex1[...]
    "ANDN920101" in aaindex1  # True
+   "andn920101" in aaindex1  # True
 
    # Iteration over record codes
    for code in aaindex1:
@@ -173,5 +174,12 @@ objects, which support both dict-style and attribute-style access:
    record = aaindex1["ANDN920101"]
    record["description"]    # dict-style
    record.description       # attribute-style (identical result)
+
+.. note::
+
+   Every accessor that returns record data — ``__getitem__``, ``to_dict()``, ``values()``,
+   ``search()``, ``search_fuzzy()``, ``get_record_by_category()`` and ``amino_acids()`` —
+   returns a **copy**. Mutating the result is safe and does not affect the loaded database
+   or what any later call returns.
 
 

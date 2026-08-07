@@ -21,14 +21,19 @@ jobs:
     name: Deploy to TestPyPI 📦
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # only run if build workflow succeeded, or triggered manually
-    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    # only run if build workflow succeeded, or triggered manually.
+    # workflow_run.branches filters on the HEAD branch name, which a fork PR controls — so
+    # also require the triggering run to come from this repo, not a fork branch named 'main'.
+    if: >-
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository) ||
+      github.event_name == 'workflow_dispatch'
 
     steps:
       - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 

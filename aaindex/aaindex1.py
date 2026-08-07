@@ -15,7 +15,7 @@ import warnings
 from importlib.metadata import version as _pkg_version, PackageNotFoundError
 from typing import Any, Iterator
 
-from ._aaindex_matrix import Map
+from ._aaindex_matrix import Map, _write_json_cache
 
 __all__: list[str] = ['AAIndex1', 'aaindex1']
 
@@ -56,8 +56,19 @@ class AAIndex1():
         """Load the database from the JSON cache, or parse the raw file if the cache is absent."""
         json_path = os.path.join(self.aaindex_module_path, self.data_dir, f"{self.aaindex_filename}.json")
         if os.path.isfile(json_path):
-            with open(json_path) as aai_json:
-                self._aaindex_json = json.load(aai_json)
+            try:
+                with open(json_path) as aai_json:
+                    self._aaindex_json = json.load(aai_json)
+            except (json.JSONDecodeError, OSError) as e:
+                #B3: an unreadable or truncated cache must not be fatal — fall back to the raw file
+                warnings.warn(
+                    f"Cached database at {json_path} is unreadable ({e}); "
+                    f"re-parsing the raw AAindex1 file.",
+                    UserWarning, stacklevel=2,
+                )
+                self._aaindex_json = self._parse_aaindex()
+                self._set_amino_acids_cache()
+                return
             #normalise types that may differ in older cached JSON
             for record in self._aaindex_json.values():
                 cc = record.get('correlation_coefficients', {})
@@ -72,6 +83,13 @@ class AAIndex1():
                     vals['-'] = float(vals['-'])
         else:
             self._aaindex_json = self._parse_aaindex()
+        self._set_amino_acids_cache()
+
+    def _set_amino_acids_cache(self) -> None:
+        """Cache the amino acid codes taken from the first record's values dict."""
+        if not self._aaindex_json:
+            self._amino_acids_cache = []
+            return
         self._amino_acids_cache = sorted(
             self._aaindex_json[next(iter(self._aaindex_json))]["values"].keys()
         )
@@ -155,14 +173,32 @@ class AAIndex1():
                     )
                     current_dict = copy.deepcopy(template_dict)
                     continue
-                aa_names = aa_lines[0].split()
+                #B4: header entries are 'X/Y' pairs — skip any that are malformed rather
+                #than letting the [1] index raise
+                aa_names = [aa for aa in aa_lines[0].split() if "/" in aa]
                 row_0_names = [aa.split("/")[0] for aa in aa_names]
                 row_1_names = [aa.split("/")[1] for aa in aa_names]
                 row_0_values = aa_lines[1].split()
                 row_1_values = aa_lines[2].split()
 
+                #B4: the two value rows and the header must line up; a short row previously
+                #raised a bare IndexError instead of the warn-and-skip path used elsewhere
+                n_values = min(
+                    len(row_0_names), len(row_1_names), len(row_0_values), len(row_1_values)
+                )
+                if not (
+                    len(row_0_names) == len(row_1_names)
+                    == len(row_0_values) == len(row_1_values)
+                ):
+                    warnings.warn(
+                        f"Record {name!r} has a mismatched I-block "
+                        f"({len(aa_names)} headers, {len(row_0_values)}/{len(row_1_values)} "
+                        f"values); parsing the first {n_values} column(s) only.",
+                        UserWarning, stacklevel=2,
+                    )
+
                 values: dict = {}
-                for i in range(len(row_0_values)):
+                for i in range(n_values):
                     try:
                         values[row_0_names[i]] = float(row_0_values[i])
                     except ValueError:
@@ -188,6 +224,11 @@ class AAIndex1():
                 current_dict = copy.deepcopy(template_dict)
                 continue
 
+            #blank lines carry no field code — skip before indexing to avoid a spurious
+            #warning (and an IndexError on a file with no trailing newline)
+            if not line.strip():
+                continue
+
             #B7: guard against unknown field codes to prevent KeyError
             if line[0] != " ":
                 if line[0] not in current_dict:
@@ -201,19 +242,26 @@ class AAIndex1():
             current_dict[current_entry].append(line[1:].strip())
 
         #post-process: assign category and '-' gap placeholder (NA stays as None)
+        #B5: a record absent from the category file must not abort the whole parse — the
+        #category file is maintained separately and lags behind new AAindex releases
+        categories = self.categories
+        uncategorised = [index for index in aaindex_json if index not in categories]
+        if uncategorised:
+            warnings.warn(
+                f"{len(uncategorised)} record(s) have no entry in the category file and were "
+                f"assigned category 'unknown': {uncategorised[:5]}"
+                f"{'...' if len(uncategorised) > 5 else ''}",
+                UserWarning, stacklevel=2,
+            )
         for index in aaindex_json:
-            aaindex_json[index]['category'] = self.categories[index]
+            aaindex_json[index]['category'] = categories.get(index, 'unknown')
             aaindex_json[index]['values']['-'] = 0.0
 
         #cache parsed database as JSON for fast subsequent loads; non-fatal if the data dir is read-only
         json_out_path = os.path.join(
             self.aaindex_module_path, self.data_dir, f"{self.aaindex_filename}.json"
         )
-        try:
-            with open(json_out_path, 'w') as output_f:
-                json.dump(aaindex_json, output_f, indent=4, sort_keys=True)
-        except OSError:
-            pass
+        _write_json_cache(json_out_path, aaindex_json)
 
         return aaindex_json
 
@@ -350,11 +398,13 @@ class AAIndex1():
                     or term_lower in record['pmid'].lower()
                     or term_lower in record['references'].lower()
                     or term_lower in record['notes'].lower()
+                    or term_lower in record.get('category', '').lower()
                 ):
                     all_indices[index] = record
 
         #I6: return results sorted by accession code for deterministic ordering
-        return dict(sorted(all_indices.items()))
+        #B2: copy so callers cannot mutate the database through search results
+        return copy.deepcopy(dict(sorted(all_indices.items())))
 
     def search_fuzzy(
         self,
@@ -408,7 +458,7 @@ class AAIndex1():
             if score >= cutoff:
                 scored.append((score, code))
         scored.sort(key=lambda x: x[0], reverse=True)
-        return {code: self.aaindex_json[code] for _, code in scored[:n]}
+        return {code: copy.deepcopy(self.aaindex_json[code]) for _, code in scored[:n]}
 
     def amino_acids(self) -> list[str]:
         """Return sorted list of amino acid single-letter codes.
@@ -420,7 +470,8 @@ class AAIndex1():
         """
         #trigger lazy load if necessary (also sets _amino_acids_cache)
         _ = self.aaindex_json
-        return self._amino_acids_cache
+        #B2: return a copy so a caller mutating the list cannot poison the cache
+        return list(self._amino_acids_cache)
 
     def record_codes(self) -> list[str]:
         """Return sorted list of all accession numbers in the database.
@@ -501,8 +552,9 @@ class AAIndex1():
             raise ValueError(f"Category '{category}' not found in AAindex1.{hint}")
 
         #filter records by matching category field
+        #B2: copy so callers cannot mutate the database through the returned records
         category_records = {
-            code: record for code, record in self.aaindex_json.items()
+            code: copy.deepcopy(record) for code, record in self.aaindex_json.items()
             if record.get('category', '').lower() == category.lower()
         }
         return category_records
@@ -800,8 +852,9 @@ class AAIndex1():
             code = record_code.strip().upper()
             if code not in self.aaindex_json:
                 raise ValueError(f"Record ({code}) not found in AAindex1.")
-            return {code: dict(self.aaindex_json[code])}
-        return dict(self.aaindex_json)
+            #B2: deep copy so callers cannot mutate the shared database through the export
+            return {code: copy.deepcopy(self.aaindex_json[code])}
+        return copy.deepcopy(self.aaindex_json)
 
     def to_json(self, record_code: str | None = None, indent: int = 4) -> str:
         """Serialise one record or the full database to a JSON string.
@@ -923,7 +976,8 @@ class AAIndex1():
                          leading/trailing whitespace is stripped).
 
         Returns:
-            Record data as a Map, accessible via dict or dot notation.
+            Record data as a Map, accessible via dict or dot notation. The record
+            is a copy — mutating it does not affect the loaded database.
 
         Raises:
             TypeError: If record_code is not a string.
@@ -943,7 +997,9 @@ class AAIndex1():
             hint = f" Did you mean: {close}?" if close else ""
             raise ValueError(f"Record Index ({record_code}) not found in AAindex1.{hint}")
 
-        return Map(self.aaindex_json[record_code])
+        #B2: Map only copies top-level keys, so the nested values dict would stay shared with
+        #the singleton — deep copy it so record['values'][aa] = x cannot corrupt the database
+        return Map(copy.deepcopy(self.aaindex_json[record_code]))
 
     def __sizeof__(self) -> int:
         """Return the on-disk size of the raw AAindex data file in bytes."""
@@ -956,8 +1012,14 @@ class AAIndex1():
         return len(self.aaindex_json)
 
     def __contains__(self, record_code: object) -> bool:
-        """Return True if record_code exists in the database."""
-        return record_code in self.aaindex_json
+        """Return True if record_code exists in the database.
+
+        Normalises case and surrounding whitespace so that ``code in aaindex1``
+        agrees with ``aaindex1[code]``.
+        """
+        if not isinstance(record_code, str):
+            return False
+        return record_code.strip().upper() in self.aaindex_json
 
     def __iter__(self) -> Iterator[str]:
         """Iterate over all record codes in the database."""

@@ -138,7 +138,9 @@ dmypy.json
 #temp folder for unused code etc
 old_stuff/
 
-# Cached JSON data files generated at runtime
-aaindex/data/*.json
+# The parsed JSON caches are committed on purpose: they are shipped as package data so a
+# fresh install never has to parse the raw files or write into site-packages. Regenerate
+# with `rm aaindex/data/*.json && python -c "import aaindex"`; tests/test_data_cache.py
+# fails if they drift from the raw databases.
 
 TODO.md

@@ -21,14 +21,19 @@ jobs:
     name: Deploy to PyPI 📦
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # only run if TestPyPI workflow succeeded, or triggered manually
-    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    # only run if TestPyPI workflow succeeded, or triggered manually.
+    # workflow_run.branches filters on the HEAD branch name, which a fork PR controls — so
+    # also require the triggering run to come from this repo, not a fork branch named 'main'.
+    if: >-
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository) ||
+      github.event_name == 'workflow_dispatch'
 
     steps:
       - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -53,9 +58,12 @@ jobs:
       # Log triggering workflow info when run via workflow_run
       - name: Verify TestPyPI deployment
         if: github.event_name == 'workflow_run'
+        env:
+          TRIGGER_NAME: ${{ github.event.workflow_run.name }}
+          TRIGGER_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
-          echo "Triggered by: ${{ github.event.workflow_run.name }}"
-          echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Triggered by: $TRIGGER_NAME"
+          echo "Conclusion: $TRIGGER_CONCLUSION"
 
       # Audit packages for vulnerabilities before building
       - name: Security check before build

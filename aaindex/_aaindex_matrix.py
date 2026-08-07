@@ -3,6 +3,7 @@
 ################################################################################
 
 #importing required modules and dependencies
+import contextlib
 import difflib
 import json
 import math
@@ -10,9 +11,39 @@ import os
 import sys
 import copy
 import re
+import tempfile
 import warnings
 from importlib.metadata import version as _pkg_version, PackageNotFoundError
 from typing import Any, Iterator
+
+#matrix header is 'M rows = <AAs>, cols = <AAs>'. Record DOSZ010101 in the upstream
+#AAindex2 source has a typo ('cols rows =') so the column string is matched by name
+#rather than by token position, which previously grabbed '=' as the column order.
+_ROWS_PATTERN = re.compile(r"rows\s*=\s*(\S+)")
+_COLS_PATTERN = re.compile(r"cols\s*\S*\s*=\s*(\S+)")
+
+
+def _write_json_cache(path: str, data: dict) -> None:
+    """Atomically write *data* to *path* as JSON; silently skip if the dir is read-only.
+
+    Writes to a temporary file in the same directory then renames it into place, so
+    an interrupted or concurrent write can never leave a truncated cache behind that
+    would make every subsequent load raise JSONDecodeError.
+    """
+    directory = os.path.dirname(path)
+    tmp_path = None
+    try:
+        fd, tmp_path = tempfile.mkstemp(dir=directory, suffix=".tmp")
+        with os.fdopen(fd, "w") as output_f:
+            json.dump(data, output_f, indent=4, sort_keys=True)
+        #mkstemp creates 0600; the cache is shared package data, so widen it to the 0644
+        #the previous non-atomic open(w) produced (reading umask here would race other threads)
+        os.chmod(tmp_path, 0o644)
+        os.replace(tmp_path, path)
+    except OSError:
+        if tmp_path is not None and os.path.exists(tmp_path):
+            with contextlib.suppress(OSError):
+                os.remove(tmp_path)
 
 
 class Map(dict):
@@ -127,8 +158,18 @@ class _AAIndexMatrix:
             self.aaindex_module_path, self.data_dir, self.aaindex_filename + ".json"
         )
         if os.path.isfile(json_path):
-            with open(json_path) as aai_json:
-                self._aaindex_json = json.load(aai_json)
+            try:
+                with open(json_path) as aai_json:
+                    self._aaindex_json = json.load(aai_json)
+            except (json.JSONDecodeError, OSError) as e:
+                #B3: an unreadable or truncated cache must not be fatal — fall back to the raw file
+                warnings.warn(
+                    f"Cached database at {json_path} is unreadable ({e}); "
+                    f"re-parsing the raw AAindex file.",
+                    UserWarning, stacklevel=2,
+                )
+                self._aaindex_json = self._parse_aaindex()
+                return
             #normalise correlation_coefficients to float; older cached JSON stored them as strings
             for record in self._aaindex_json.values():
                 cc = record.get('correlation_coefficients', {})
@@ -221,11 +262,16 @@ class _AAIndexMatrix:
                 for m_line in current_dict["M"]:
                     stripped = m_line.strip()
                     if stripped.startswith("rows"):
-                        #format: rows = <AA_STRING> cols = <AA_STRING>
-                        parts = stripped.replace(",", "").split()
-                        if len(parts) >= 6:
-                            row_order = list(parts[2])
-                            col_order = list(parts[5])
+                        #format: rows = <AA_STRING>, cols = <AA_STRING>
+                        #B1: match by field name, not token position — one upstream record
+                        #(DOSZ010101) writes 'cols rows =' and positional parsing read '=' as
+                        #the entire column order, silently discarding the whole matrix.
+                        header = stripped.replace(",", "")
+                        rows_match = _ROWS_PATTERN.search(header)
+                        cols_match = _COLS_PATTERN.search(header)
+                        if rows_match and cols_match:
+                            row_order = list(rows_match.group(1))
+                            col_order = list(cols_match.group(1))
                         else:
                             warnings.warn(
                                 f"Malformed rows/cols header in record {name!r}: {stripped!r}",
@@ -295,6 +341,11 @@ class _AAIndexMatrix:
                 current_dict = copy.deepcopy(template_dict)
                 continue
 
+            #blank lines carry no field code — skip before indexing to avoid a spurious
+            #warning (and an IndexError on a file with no trailing newline)
+            if not line.strip():
+                continue
+
             #B7: guard against unknown field codes to prevent KeyError
             if line[0] != " ":
                 if line[0] not in current_dict:
@@ -310,11 +361,7 @@ class _AAIndexMatrix:
         json_out_path = os.path.join(
             self.aaindex_module_path, self.data_dir, self.aaindex_filename + ".json"
         )
-        try:
-            with open(json_out_path, "w") as output_f:
-                json.dump(aaindex_json, output_f, indent=4, sort_keys=True)
-        except OSError:
-            pass
+        _write_json_cache(json_out_path, aaindex_json)
 
         return aaindex_json
 
@@ -354,13 +401,14 @@ class _AAIndexMatrix:
             TypeError: If aa1 or aa2 are not strings.
             ValueError: If record_code is not found in the database.
         """
-        record = self[record_code]
         try:
             aa1 = aa1.strip().upper()
             aa2 = aa2.strip().upper()
         except AttributeError:
             raise TypeError("aa1 and aa2 must be single-letter string amino acid codes.")
-        matrix = record.matrix
+        #read the live matrix rather than going through __getitem__ — this is a hot path and
+        #the returned float is immutable, so there is nothing for the caller to mutate
+        matrix = self.aaindex_json[self._resolve_code(record_code)]['matrix']
         if aa1 in matrix and aa2 in matrix[aa1]:
             return matrix[aa1][aa2]
         return None
@@ -418,7 +466,8 @@ class _AAIndexMatrix:
                 ):
                     all_indices[index] = value
         #I6: return results sorted by accession code for deterministic ordering
-        return dict(sorted(all_indices.items()))
+        #B2: copy so callers cannot mutate the database through search results
+        return copy.deepcopy(dict(sorted(all_indices.items())))
 
     def search_fuzzy(
         self,
@@ -471,7 +520,7 @@ class _AAIndexMatrix:
             if score >= cutoff:
                 scored.append((score, code))
         scored.sort(key=lambda x: x[0], reverse=True)
-        return {code: self.aaindex_json[code] for _, code in scored[:n]}
+        return {code: copy.deepcopy(self.aaindex_json[code]) for _, code in scored[:n]}
 
     def amino_acids(self) -> list[str]:
         """Return sorted list of the 20 canonical amino acid single-letter codes.
@@ -483,9 +532,12 @@ class _AAIndexMatrix:
             Sorted list of single-letter amino acid codes.
         """
         if self._amino_acids_cache is None:
+            if not self.aaindex_json:
+                return []
             first_record = self.aaindex_json[next(iter(self.aaindex_json))]
             self._amino_acids_cache = sorted(first_record["row_order"])
-        return self._amino_acids_cache
+        #B2: return a copy so a caller mutating the list cannot poison the cache
+        return list(self._amino_acids_cache)
 
     def record_codes(self) -> list[str]:
         """Return sorted list of all accession numbers in the database.
@@ -531,8 +583,9 @@ class _AAIndexMatrix:
                 raise ValueError(
                     f"Record ({code}) not found in {self.__class__.__name__}."
                 )
-            return {code: dict(self.aaindex_json[code])}
-        return dict(self.aaindex_json)
+            #B2: deep copy so callers cannot mutate the shared database through the export
+            return {code: copy.deepcopy(self.aaindex_json[code])}
+        return copy.deepcopy(self.aaindex_json)
 
     def to_json(self, record_code: str | None = None, indent: int = 4) -> str:
         """Serialise one record or the full database to a JSON string.
@@ -653,15 +706,8 @@ class _AAIndexMatrix:
         ax.set_title(record['description'][:80])
         return ax
 
-    def __getitem__(self, record_code: str) -> "Map":
-        """Return a record by accession number wrapped in a Map (dot-notation dict).
-
-        Args:
-            record_code: AAindex accession number (case-insensitive,
-                         leading/trailing whitespace is stripped).
-
-        Returns:
-            Record data as a Map, accessible via dict or dot notation.
+    def _resolve_code(self, record_code: str) -> str:
+        """Normalise and validate an accession number, returning its canonical form.
 
         Raises:
             TypeError: If record_code is not a string.
@@ -681,15 +727,41 @@ class _AAIndexMatrix:
             raise ValueError(
                 f"Record ({record_code}) not found in {self.__class__.__name__}.{hint}"
             )
-        return Map(self.aaindex_json[record_code])
+        return record_code
+
+    def __getitem__(self, record_code: str) -> "Map":
+        """Return a record by accession number wrapped in a Map (dot-notation dict).
+
+        Args:
+            record_code: AAindex accession number (case-insensitive,
+                         leading/trailing whitespace is stripped).
+
+        Returns:
+            Record data as a Map, accessible via dict or dot notation. The record
+            is a copy — mutating it does not affect the loaded database.
+
+        Raises:
+            TypeError: If record_code is not a string.
+            ValueError: If record_code is not found in the database.
+        """
+        record_code = self._resolve_code(record_code)
+        #B2: Map only copies top-level keys, so the nested matrix would stay shared with
+        #the singleton — deep copy it so record['matrix'][x][y] = z cannot corrupt the database
+        return Map(copy.deepcopy(self.aaindex_json[record_code]))
 
     def __len__(self) -> int:
         """Return total number of records in the database."""
         return len(self.aaindex_json)
 
     def __contains__(self, record_code: object) -> bool:
-        """Return True if record_code exists in the database."""
-        return record_code in self.aaindex_json
+        """Return True if record_code exists in the database.
+
+        Normalises case and surrounding whitespace so that ``code in db`` agrees
+        with ``db[code]``.
+        """
+        if not isinstance(record_code, str):
+            return False
+        return record_code.strip().upper() in self.aaindex_json
 
     def __iter__(self) -> Iterator[str]:
         """Iterate over all accession numbers in the database."""
